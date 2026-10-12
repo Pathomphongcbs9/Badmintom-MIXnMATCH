@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="จัดคู่แบดมินตันแบบสลับคู่ทุกรอบ คู่ผสม บันทึกคะแนน ประวัติ และหารค่าใช้จ่าย">
+<meta name="theme-color" content="#1f6a47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mix&amp;Match">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>Badminton Mix&amp;Match</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one-column organizer tool; header with session settings, three tabs (players / matches / standings); matches drawn as green court cards with a net down the middle */
+:root{
+  --bg:#edf1ec; --surface:#fbfcfa; --sunk:#e3e9e3; --ink:#15211a; --muted:#5b6b61; --rule:#d2dcd4;
+  --court:#1f6a47; --court-deep:#18573a; --court-line:rgba(255,255,255,.82); --court-ink:#ffffff;
+  --shuttle:#d98f22; --shuttle-ink:#2a1a03; --danger:#b23a2e; --ok:#1f6a47;
+  --male:#2d62a8; --female:#b8417a; --male-on:#8ec2ff; --female-on:#ff9cc8;
+  --f-display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1511; --surface:#151f1a; --sunk:#1b2721; --ink:#e5ede7; --muted:#93a599; --rule:#28372e;
+  --court:#1d5c3e; --court-deep:#174a32; --court-line:rgba(255,255,255,.7); --court-ink:#f4fbf6;
+  --shuttle:#efb04f; --shuttle-ink:#2a1a03; --danger:#e0705f; --ok:#5cc08a; --male:#7fb0f0; --female:#f08cbc; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1511; --surface:#151f1a; --sunk:#1b2721; --ink:#e5ede7; --muted:#93a599; --rule:#28372e;
+  --court:#1d5c3e; --court-deep:#174a32; --court-line:rgba(255,255,255,.7); --court-ink:#f4fbf6;
+  --shuttle:#efb04f; --shuttle-ink:#2a1a03; --danger:#e0705f; --ok:#5cc08a; --male:#7fb0f0; --female:#f08cbc; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.add input[type=text],.add select{font-size:16px}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:18px 64px;display:grid;gap:18px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--shuttle);outline-offset:2px}
+
+header.top{display:grid;gap:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+.brand h1{font-family:var(--f-display);font-size:clamp(21px,6vw,28px);line-height:1.1;margin:0;letter-spacing:.02em;text-wrap:balance}
+.brand h1 .ver{font-family:var(--f-body);font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--muted);white-space:nowrap;vertical-align:middle}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13.5px}
+.settings{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.set{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:8px 12px;display:flex;align-items:center;gap:10px;min-width:0}
+.set label,.lbl{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:30px;height:30px;border-radius:8px;border:1px solid var(--rule);background:var(--sunk);font-weight:600}
+.stepper output{font-family:var(--f-num);font-weight:700;min-width:1.4em;text-align:center;font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;background:var(--sunk);border-radius:8px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:5px 11px;border-radius:6px;font-size:13.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+.sample{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:1px dashed var(--shuttle);border-radius:var(--r);padding:10px 14px;font-size:14px}
+.sample b{color:var(--shuttle)}
+
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--rule);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+nav.tabs button{white-space:nowrap;flex:none;border:0;background:none;padding:10px 12px;font-family:var(--f-display);font-weight:600;font-size:16px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--shuttle)}
+nav.tabs .count{font-family:var(--f-num);font-size:12px;margin-left:4px;color:var(--muted)}
+
+section.panel{display:grid;gap:16px}
+h2{font-family:var(--f-display);font-size:20px;margin:0;text-wrap:balance}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.spread{justify-content:space-between}
+
+.btn{border:1px solid var(--rule);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--shuttle);border-color:var(--shuttle);color:var(--shuttle-ink);font-weight:600;font-family:var(--f-display);font-size:17px;padding:11px 20px}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.warn{color:var(--danger)}
+.btn.armed{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.small{padding:5px 10px;font-size:13px}
+
+/* players */
+.add{display:flex;flex-wrap:wrap;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:12px}
+.add input[type=text]{flex:1 1 220px;min-width:0;border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:9px 12px}
+.add select{border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:9px 10px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.pl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:9px 10px}
+.pl.off{opacity:.55}
+.pl .nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .meta{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pl .ctl{display:flex;gap:4px;align-items:center}
+.pl select{border:1px solid var(--rule);background:var(--bg);border-radius:6px;padding:3px 4px;font-size:12.5px}
+.tog{width:38px;height:22px;border-radius:11px;border:0;background:var(--rule);position:relative;flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.tog[aria-pressed="true"]{background:var(--court)}
+.tog[aria-pressed="true"]::after{transform:translateX(16px)}
+.gbtn{border:1px solid var(--rule);background:var(--bg);border-radius:6px;min-width:30px;height:26px;font-size:12.5px;font-weight:600;padding:0 6px;color:var(--muted)}
+.gbtn.m{border-color:var(--male);color:var(--male)}
+.gbtn.f{border-color:var(--female);color:var(--female)}
+.gdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle;background:var(--court-line)}
+.gdot.m{background:var(--male-on)} .gdot.f{background:var(--female-on)}
+.gsum{display:flex;gap:12px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gsum b{font-weight:600}
+.x{border:0;background:none;color:var(--muted);width:26px;height:26px;border-radius:6px;font-size:16px;line-height:1}
+.x:hover{background:var(--sunk);color:var(--danger)}
+.x.armed{background:var(--danger);color:#fff}
+
+/* rounds */
+.round{display:grid;gap:10px}
+.round + .round{border-top:1px solid var(--rule);padding-top:18px}
+.rhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px}
+.rhead h3{font-family:var(--f-display);font-size:18px;margin:0}
+.rhead .now{background:var(--shuttle);color:var(--shuttle-ink);font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.04em}
+.courts{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.court{background:var(--court);border-radius:var(--r);color:var(--court-ink);padding:10px;display:grid;gap:8px}
+.court .ch{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;letter-spacing:.06em;opacity:.9;padding-inline:4px}
+.court .ch b{font-family:var(--f-display);font-size:15px;letter-spacing:.02em}
+.court{background:var(--court-deep)}
+/* viewBox has 30cm run-off around a 1340×610 court: inner court spans 30/1400 → 1370/1400 horizontally, 30/670 → 640/670 vertically */
+.cv{position:relative;width:100%;aspect-ratio:1400/670;max-width:100%}
+.csvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.csvg .surf{fill:var(--court)}
+.csvg .winfill{fill:var(--shuttle);fill-opacity:.2}
+.csvg .ln{stroke:var(--court-line);stroke-width:1.5px;vector-effect:non-scaling-stroke}
+.csvg .netln{stroke:var(--court-ink);stroke-width:3px;stroke-dasharray:2 2;vector-effect:non-scaling-stroke}
+.csvg .post{fill:var(--court-ink)}
+/* each half: from back line to short service line (472cm), split into right/left service courts */
+.half{position:absolute;top:calc(30/670*100%);height:calc(610/670*100%);width:calc(472/1400*100%);display:flex;flex-direction:column}
+.half.a{left:calc(30/1400*100%)}
+.half.b{left:calc(898/1400*100%)}
+.box{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:2px 6px;min-width:0;font-weight:600;font-size:clamp(12.5px,3.6vw,15px);line-height:1.25;overflow-wrap:anywhere}
+.half.win .box{color:var(--shuttle)}
+.scorebar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+.scorebar .score{justify-self:center}
+.scorebar .vs{font-size:11px;letter-spacing:.08em;opacity:.75}
+.score{width:64px;font-family:var(--f-num);font-weight:700;font-size:22px;text-align:center;border:0;border-radius:6px;padding:4px 0;background:rgba(255,255,255,.14);color:var(--court-ink);position:relative;z-index:1;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.score::-webkit-inner-spin-button,.score::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.score::placeholder{color:rgba(255,255,255,.45)}
+.sit{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}
+.chip{background:var(--sunk);border-radius:20px;padding:2px 10px}
+.empty{background:var(--surface);border:1px dashed var(--rule);border-radius:var(--r);padding:28px 18px;text-align:center;color:var(--muted)}
+.how{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:12px 16px;font-size:13.5px;color:var(--muted)}
+.how ul{margin:6px 0 0;padding-left:20px}
+
+/* standings */
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:480px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--rule)}
+th{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em}
+th:nth-child(2),td:nth-child(2){text-align:left}
+td.n{font-family:var(--f-num)}
+tr:last-child td{border-bottom:0}
+td.rank{font-family:var(--f-num);font-weight:700;color:var(--muted);width:3em}
+tr.top1 td.rank{color:var(--shuttle)}
+.pos{color:var(--ok)} .neg{color:var(--danger)}
+
+/* costs */
+.costgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;align-items:start}
+.ccard{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:12px 14px;display:grid;gap:10px;min-width:0}
+.ch3{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--f-display);font-weight:600;font-size:16px}
+.ch3 b{font-family:var(--f-num);font-size:14px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.fld{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.fld input,.exrow input{width:100%;min-width:0;border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:16px;font-family:var(--f-num);font-variant-numeric:tabular-nums;color:var(--ink)}
+.extras{display:grid;gap:6px}
+.exrow{display:grid;grid-template-columns:1fr 96px auto;gap:6px;align-items:center}
+.exrow input[type=text]{font-family:var(--f-body)}
+.payers{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{border:1px solid var(--rule);background:var(--bg);border-radius:20px;padding:4px 12px;font-size:14px;color:var(--muted);text-decoration:line-through}
+.pchip.free{background:var(--shuttle);border-color:var(--shuttle);color:var(--shuttle-ink);text-decoration:none;font-weight:600}
+.freeline{font-size:13px;color:var(--muted);padding:4px 0}
+.freeline b{color:var(--ink);font-weight:600}
+.winners{display:grid}
+.pchip[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:var(--court-ink);text-decoration:none}
+.bill{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--shuttle);border-radius:var(--r);padding:14px 16px;display:grid;gap:12px}
+.bill-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bill-top .big{font-family:var(--f-num);font-weight:700;font-size:34px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.lines{display:grid}
+.ln2{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--rule);font-size:14px}
+.ln2 span{min-width:0}
+.ln2 small{display:block;color:var(--muted);font-size:12px}
+.ln2 b{font-family:var(--f-num);font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ln2.tot{border-bottom:0;font-weight:600}
+.ln2.tot b{font-weight:700}
+.ln2.note{border-bottom:0;color:var(--muted);font-size:13px;padding-top:0}
+.copybox{width:100%;min-height:150px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--ink);padding:10px;font-size:14px}
+.hcost{display:grid;gap:2px;background:var(--bg);border-radius:8px;padding:10px 12px}
+.hcost .ch3{font-size:15px;margin-bottom:4px}
+.paycard .fields{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.fld select{width:100%;border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:16px;color:var(--ink)}
+.fld input[type=text]{font-family:var(--f-body)}
+.paybox{display:grid;justify-items:center;gap:4px;text-align:center;background:var(--bg);border-radius:var(--r);padding:16px}
+.paybox .acct{font-family:var(--f-num);font-weight:700;font-size:24px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.paybox .btn{margin-top:6px}
+.qr{width:220px;max-width:100%;height:auto;background:#fff;border-radius:8px;padding:6px;image-rendering:pixelated}
+.qr.up{image-rendering:auto;width:240px}
+.drop{display:grid;gap:4px;justify-items:center;border:1.5px dashed var(--rule);border-radius:var(--r);padding:22px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px}
+.drop b{color:var(--ink);font-size:15px}
+.drop:hover{border-color:var(--shuttle)}
+.hint.err{color:var(--danger)}
+label.btn{cursor:pointer;display:inline-block}
+/* rules */
+.rules{display:grid;gap:14px}
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px 20px}
+.rule h3{font-family:var(--f-display);font-size:15.5px;margin:0 0 6px}
+.rule ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.rule li{font-size:13.5px;color:var(--muted);line-height:1.55}
+.rule li::marker{color:var(--shuttle)}
+/* history */
+.hcur{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--sunk);border-radius:var(--r);padding:10px 14px;font-size:14px}
+.hcard{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.hhead{width:100%;text-align:left;border:0;background:none;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center}
+.hhead:hover{background:var(--sunk)}
+.hhead .d{font-family:var(--f-display);font-weight:600;font-size:16.5px}
+.hhead .m{grid-column:1/-1;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.hhead .champ{color:var(--shuttle);font-weight:600}
+.hhead .chev{font-size:22px;line-height:1;color:var(--muted);transition:transform .15s}
+.hcard.open .chev{transform:rotate(90deg)}
+.hbody{border-top:1px solid var(--rule);padding:14px;display:grid;gap:16px}
+.hrounds{display:grid;gap:14px}
+.hround{display:grid;gap:2px}
+.hround .lbl{font-weight:600;margin-bottom:2px}
+.hmatch{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--rule);font-size:14px}
+.hmatch .ct{font-size:12px;color:var(--muted);white-space:nowrap}
+.hmatch .tm{min-width:0;overflow-wrap:anywhere}
+.hmatch .tm.r{text-align:right}
+.hmatch .tm.w{font-weight:600;color:var(--ok)}
+.hmatch .sc{font-family:var(--f-num);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hmatch .sc i{font-style:normal;color:var(--muted);margin-inline:3px}
+.hmatch .gdot.m{background:var(--male)} .hmatch .gdot.f{background:var(--female)}
+.hmatch .gdot{background:var(--rule)}
+.hsit{font-size:12.5px;color:var(--muted);padding-top:4px}
+@media (max-width:480px){.hmatch{grid-template-columns:1fr auto 1fr}.hmatch .ct{grid-column:1/-1}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;max-width:calc(100% - 32px);z-index:20}
+footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+@media (max-width:420px){.courts{grid-template-columns:1fr}.score{width:54px;font-size:20px}.brand h1{font-size:24px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="54" height="54" viewBox="0 0 48 48" aria-hidden="true">
+        <g transform="rotate(-32 24 26)" fill="none" stroke="var(--ink)" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 9.5 Q24 5.4 36 9.5" stroke-width="2.6"/>
+          <path d="M15.3 20 Q24 17.9 32.7 20" stroke-width="2" opacity=".5"/>
+          <path d="M19 32 L12 9.5 M22.3 32 L20 7 M25.7 32 L28 7 M29 32 L36 9.5" stroke-width="2.4"/>
+          <rect x="17.4" y="30.6" width="13.2" height="3.6" rx="1.4" fill="var(--ink)" stroke="none"/>
+          <path d="M17.6 34 H30.4 A6.4 6.8 0 0 1 17.6 34 Z" fill="var(--shuttle)" stroke="none"/>
+        </g>
+      </svg>
+      <div>
+        <h1>BADMINTON MIX&amp;MATCH <small class="ver">V.Beta By Pathomphong Suwannasin</small></h1>
+        <p>จัดคู่แบดมินตันแบบสลับคู่ทุกรอบ ทุกคนได้เล่นเท่ากัน</p>
+      </div>
+    </div>
+    <div class="settings">
+      <div class="set"><span class="lbl">สนาม</span>
+        <div class="stepper"><button id="cMinus" data-act="courts" data-d="-1" aria-label="ลดจำนวนสนาม">−</button><output id="cOut">2</output><button id="cPlus" data-act="courts" data-d="1" aria-label="เพิ่มจำนวนสนาม">+</button></div>
+      </div>
+      <div class="set"><span class="lbl">ประเภท</span>
+        <div class="seg" id="modeSeg"><button data-act="mode" data-v="doubles">คู่</button><button data-act="mode" data-v="mixed">คู่ผสม</button><button data-act="mode" data-v="singles">เดี่ยว</button></div>
+      </div>
+      <div class="set"><span class="lbl">จัดทีม</span>
+        <div class="seg" id="balSeg"><button data-act="bal" data-v="1">ถัวฝีมือ</button><button data-act="bal" data-v="0">สุ่มล้วน</button></div>
+      </div>
+    </div>
+  </header>
+
+  <div id="sampleBar"></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-act="tab" data-v="players" id="tab-players">ผู้เล่น<span class="count" id="pCount"></span></button>
+    <button role="tab" data-act="tab" data-v="matches" id="tab-matches">แมตช์<span class="count" id="rCount"></span></button>
+    <button role="tab" data-act="tab" data-v="standings" id="tab-standings">อันดับ</button>
+    <button role="tab" data-act="tab" data-v="cost" id="tab-cost">ค่าใช้จ่าย</button>
+    <button role="tab" data-act="tab" data-v="history" id="tab-history">ประวัติ<span class="count" id="hCount"></span></button>
+    <button role="tab" data-act="tab" data-v="rules" id="tab-rules">กติกา</button>
+  </nav>
+
+  <section class="panel" id="panel-players"></section>
+  <section class="panel" id="panel-matches"></section>
+  <section class="panel" id="panel-standings"></section>
+  <section class="panel" id="panel-cost"></section>
+  <section class="panel" id="panel-history"></section>
+  <section class="panel rules" id="panel-rules" aria-labelledby="rulesTitle">
+    <h2 id="rulesTitle">กติกา</h2>
+    <div class="rules-grid">
+      <div class="rule">
+        <h3>การจัดคู่</h3>
+        <ul>
+          <li>คนที่เล่นมากที่สุดได้พักก่อน และคนที่เพิ่งพักรอบที่แล้วได้ลงสนามรอบถัดไป</li>
+          <li>ระบบเลี่ยงการจับคู่กับคนเดิมซ้ำ และเลี่ยงการเจอคู่แข่งหน้าเดิมบ่อย ๆ</li>
+          <li>โหมด “ถัวฝีมือ” รวมเลเวล (1–5) ของสองฝั่งให้ใกล้เคียงกัน ส่วน “สุ่มล้วน” ไม่ดูเลเวล</li>
+          <li>ผู้เล่นที่ปิดสวิตช์ “พร้อมเล่น” จะไม่ถูกจัดลงสนาม</li>
+        </ul>
+      </div>
+      <div class="rule">
+        <h3>คู่ผสม</h3>
+        <ul>
+          <li>ทุกทีมต้องมีชาย 1 คน และหญิง 1 คน</li>
+          <li>หมุนคนพักแยกกันในฝั่งชายและฝั่งหญิง ฝั่งที่คนเยอะกว่าจะได้พักบ่อยกว่า</li>
+          <li>จำนวนสนามที่เปิดได้ขึ้นกับเพศที่มีคนน้อยกว่า</li>
+          <li>ผู้เล่นที่ยังไม่ระบุเพศจะไม่ถูกจัดลงสนาม</li>
+        </ul>
+      </div>
+      <div class="rule">
+        <h3>ผลการแข่งและอันดับ</h3>
+        <ul>
+          <li>เกมจะนับเมื่อใส่คะแนนครบทั้งสองฝั่ง และคะแนนไม่เสมอกัน</li>
+          <li>อันดับเรียงตาม % ชนะ ถ้าเท่ากันดูจำนวนเกมที่ชนะ แล้วดูแต้มได้-เสีย</li>
+          <li>อันดับนับเฉพาะเซสชันปัจจุบัน เซสชันที่จบแล้วดูได้ในหน้าประวัติ</li>
+        </ul>
+      </div>
+      <div class="rule">
+        <h3>ค่าใช้จ่าย</h3>
+        <ul>
+          <li>ค่าสนาม = จำนวนสนาม × ชั่วโมง × ราคาต่อสนามต่อชั่วโมง</li>
+          <li>ค่าลูกแบด = จำนวนลูกที่ใช้ × ราคาต่อลูก รวมกับรายการอื่น ๆ ที่เพิ่มเอง</li>
+          <li>หารเท่ากันกับทุกคนในเซสชัน ทั้งคนที่ได้ลงเล่นและคนที่พัก ถ้ายังไม่เริ่มเซสชันจะหารกับผู้เล่นที่พร้อมเล่น</li>
+          <li>แตะชื่อในการ์ดผู้ร่วมหารเพื่อไม่นับคนนั้น</li>
+          <li>ปัดเศษขึ้นได้เป็น 1, 5 หรือ 10 บาท ส่วนที่เกินจะแสดงไว้ในใบสรุป</li>
+          <li>ช่องทางชำระเงินเลือกได้ทั้งบัญชีธนาคาร พร้อมเพย์ (สร้าง QR ใส่ยอดคนละให้อัตโนมัติ) หรืออัปโหลดรูป QR Code ของคุณเอง</li>
+        </ul>
+      </div>
+      <div class="rule">
+        <h3>ผู้ชนะไม่ต้องจ่าย</h3>
+        <ul>
+          <li>เลือกได้ว่าอันดับ 1, อันดับ 1–2 หรืออันดับ 1–3 ของเซสชันไม่ต้องจ่าย</li>
+          <li>ใช้อันดับเดียวกับตารางอันดับ ถ้าสถิติเท่ากับอันดับสุดท้ายที่ได้ฟรี จะได้ฟรีทุกคนที่เท่ากัน</li>
+          <li>ค่าใช้จ่ายทั้งหมดหารกับผู้เล่นที่เหลือ</li>
+        </ul>
+      </div>
+      <div class="rule">
+        <h3>การบันทึกประวัติ</h3>
+        <ul>
+          <li>กด “จบการแข่งขันและบันทึกประวัติ” เพื่อเก็บแมตช์ อันดับ และค่าใช้จ่ายของเซสชันนั้น</li>
+          <li>รายชื่อผู้เล่นและราคาสนามกับราคาลูกยังเก็บไว้ใช้ครั้งต่อไป ส่วนรายการค่าใช้จ่ายอื่น ๆ จะถูกล้าง</li>
+          <li>ข้อมูลทั้งหมดเก็บอยู่ในเครื่องที่ใช้งานเท่านั้น</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}</script>
+
+<script>
+(function(){
+const KEY='badmix-v1';
+const LV={1:'มือใหม่',2:'เริ่มเล่น',3:'กลาง',4:'ดี',5:'เก่ง'};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pk=(a,b)=>a<b?a+'|'+b:b+'|'+a;
+
+let S=null, armed=null, armTimer=null, addG='m', openHist=null;
+const Pref=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Preferences;
+function save(){const v=JSON.stringify(S);try{localStorage.setItem(KEY,v)}catch(e){}if(Pref){try{Pref.set({key:KEY,value:v})}catch(e){}}}
+function load(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null}catch(e){return null}}
+
+function seed(){
+  const names=[['ก้อง',4,'m'],['มิ้นท์',3,'f'],['เบียร์',2,'m'],['ต้นข้าว',5,'f'],['ฝน',3,'f'],['บอส',4,'m'],['แพรว',2,'f'],['นนท์',3,'m'],['จูน',3,'f'],['เต้',4,'m']];
+  S={players:names.map(([n,l,g])=>({id:uid(),name:n,level:l,g,active:true})),settings:{courts:2,mode:'mixed',balance:true},rounds:[],archive:[],tab:'matches',sample:true};
+  S.pay=payDefault();S.cost=costDefault();S.cost.extras=[{id:uid(),name:'ค่าน้ำดื่ม',amount:120}];
+  // one finished example session from two days ago
+  const past=new Date();past.setDate(past.getDate()-2);past.setHours(19,0,0,0);
+  for(let i=0;i<4;i++){generate(true);S.rounds[i].courts.forEach(c=>{const l=10+Math.floor(Math.random()*10);if(Math.random()<.5){c.sa=21;c.sb=l}else{c.sa=l;c.sb=21}})}
+  archiveSession();S.archive[0].start=+past;S.archive[0].end=+past+2*3600e3;
+  S.settings.mode='doubles';
+  generate(true);
+  const r=S.rounds[0]; r.courts[0].sa=21;r.courts[0].sb=17; r.courts[1].sa=19;r.courts[1].sb=21;
+  generate(true);
+}
+
+const P=id=>S.players.find(p=>p.id===id);
+const nm=id=>{const p=P(id);return p?p.name:'?'};
+const GL={m:'ช',f:'ญ'};
+/* BWF court in cm: 1340 × 610. Singles sidelines 46 in, short service 198 from net, doubles long service 76 from back */
+function courtSVG(win){
+  const L='class="ln"';
+  return `<svg class="csvg" viewBox="-30 -30 1400 670" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="0" y="0" width="1340" height="610" class="surf"/>
+    ${win==='a'?'<rect x="0" y="0" width="670" height="610" class="winfill"/>':''}
+    ${win==='b'?'<rect x="670" y="0" width="670" height="610" class="winfill"/>':''}
+    <rect x="0" y="0" width="1340" height="610" fill="none" ${L}/>
+    <line x1="0" y1="46" x2="1340" y2="46" ${L}/><line x1="0" y1="564" x2="1340" y2="564" ${L}/>
+    <line x1="472" y1="0" x2="472" y2="610" ${L}/><line x1="868" y1="0" x2="868" y2="610" ${L}/>
+    <line x1="76" y1="0" x2="76" y2="610" ${L}/><line x1="1264" y1="0" x2="1264" y2="610" ${L}/>
+    <line x1="0" y1="305" x2="472" y2="305" ${L}/><line x1="868" y1="305" x2="1340" y2="305" ${L}/>
+    <line x1="670" y1="-14" x2="670" y2="624" class="netln"/>
+    <circle cx="670" cy="-14" r="9" class="post"/><circle cx="670" cy="624" r="9" class="post"/>
+  </svg>`;
+}
+const gname={m:'ชาย',f:'หญิง'};
+
+function history(){
+  const h={played:{},sat:{},partner:{},opp:{}};
+  S.rounds.forEach(r=>{
+    r.sit.forEach(id=>h.sat[id]=(h.sat[id]||0)+1);
+    r.courts.forEach(c=>{
+      [...c.a,...c.b].forEach(id=>h.played[id]=(h.played[id]||0)+1);
+      [c.a,c.b].forEach(t=>{if(t.length===2){const k=pk(t[0],t[1]);h.partner[k]=(h.partner[k]||0)+1}});
+      c.a.forEach(x=>c.b.forEach(y=>{const k=pk(x,y);h.opp[k]=(h.opp[k]||0)+1}));
+    });
+  });
+  return h;
+}
+
+function plan(){
+  const mode=S.settings.mode, per=mode==='singles'?2:4;
+  const act=S.players.filter(p=>p.active&&!p.removed);
+  const M=act.filter(p=>p.g==='m').length, F=act.filter(p=>p.g==='f').length, U=act.length-M-F;
+  const courts=mode==='mixed'
+    ?Math.min(S.settings.courts,Math.floor(M/2),Math.floor(F/2))
+    :Math.min(S.settings.courts,Math.floor(act.length/per));
+  return {mode,per,act,M,F,U,courts:Math.max(0,courts),sitN:Math.max(0,act.length-Math.max(0,courts)*per)};
+}
+
+function generate(silent){
+  const {mode,per,act,courts}=plan();
+  if(courts<1){toast(mode==='mixed'?'คู่ผสมต้องมีชายอย่างน้อย 2 คนและหญิง 2 คนที่พร้อมเล่น':`ต้องมีผู้เล่นที่พร้อมอย่างน้อย ${per} คน`);return false}
+  const h=history();
+  const last=S.rounds[S.rounds.length-1];
+  const lastSit=new Set(last?last.sit:[]);
+  const rank=list=>shuffle(list).sort((x,y)=>
+    (h.played[x.id]||0)-(h.played[y.id]||0) ||
+    (lastSit.has(y.id)-lastSit.has(x.id)) ||
+    (h.sat[y.id]||0)-(h.sat[x.id]||0));
+  let playing,sit,pm=[],pf=[];
+  if(mode==='mixed'){
+    const rm=rank(act.filter(p=>p.g==='m')), rf=rank(act.filter(p=>p.g==='f'));
+    pm=rm.slice(0,courts*2).map(p=>p.id); pf=rf.slice(0,courts*2).map(p=>p.id);
+    sit=[...rm.slice(courts*2),...rf.slice(courts*2),...act.filter(p=>p.g!=='m'&&p.g!=='f')];
+  }else{
+    const ranked=rank(act);
+    playing=ranked.slice(0,courts*per); sit=ranked.slice(courts*per);
+  }
+  const lvl=id=>P(id).level||3;
+  const teamCost=(a,b)=>{
+    let c=0;
+    [a,b].forEach(t=>{if(t.length===2){const n=h.partner[pk(t[0],t[1])]||0;c+=n*n*10}});
+    a.forEach(x=>b.forEach(y=>{const n=h.opp[pk(x,y)]||0;c+=n*n*2}));
+    if(S.settings.balance){const sa=a.reduce((s,i)=>s+lvl(i),0),sb=b.reduce((s,i)=>s+lvl(i),0);c+=Math.abs(sa-sb)*4}
+    return c;
+  };
+  let best=null,bestCost=Infinity;
+  for(let it=0;it<800;it++){
+    const sh=mode==='mixed'?null:shuffle(playing.map(p=>p.id));
+    const sm=mode==='mixed'?shuffle(pm):null, sf=mode==='mixed'?shuffle(pf):null;
+    let total=0;const cs=[];
+    for(let i=0;i<courts;i++){
+      let splits;
+      if(mode==='mixed'){
+        const [m1,m2]=sm.slice(i*2,i*2+2),[f1,f2]=sf.slice(i*2,i*2+2);
+        splits=[[[m1,f1],[m2,f2]],[[m1,f2],[m2,f1]]];
+      }else{
+        const g=sh.slice(i*per,i*per+per);
+        if(per===2){total+=teamCost([g[0]],[g[1]]);cs.push({a:[g[0]],b:[g[1]]});continue}
+        splits=[[[g[0],g[1]],[g[2],g[3]]],[[g[0],g[2]],[g[1],g[3]]],[[g[0],g[3]],[g[1],g[2]]]];
+      }
+      let bs=null,bc=Infinity;
+      splits.forEach(([a,b])=>{const c=teamCost(a,b);if(c<bc){bc=c;bs={a,b}}});
+      total+=bc;cs.push(bs);
+    }
+    if(total<bestCost){bestCost=total;best=cs;if(total===0)break}
+  }
+  if(!S.rounds.length)S.sessionStart=Date.now();
+  S.rounds.push({id:uid(),mode,courts:best.map(c=>({a:c.a,b:c.b,sa:null,sb:null})),sit:sit.map(p=>p.id)});
+  if(!silent){save();toast(`จัดรอบที่ ${S.rounds.length} แล้ว`)}
+  return true;
+}
+
+function standings(rounds,ids){
+  const t={};
+  const get=id=>t[id]||(t[id]={id,g:0,w:0,l:0,pf:0,pa:0});
+  ids.forEach(get);
+  rounds.forEach(r=>r.courts.forEach(c=>{
+    if(!isDone(c))return;
+    const aw=c.sa>c.sb;
+    c.a.forEach(id=>{const s=get(id);s.g++;aw?s.w++:s.l++;s.pf+=c.sa;s.pa+=c.sb});
+    c.b.forEach(id=>{const s=get(id);s.g++;aw?s.l++:s.w++;s.pf+=c.sb;s.pa+=c.sa});
+  }));
+  return Object.values(t).sort((x,y)=>{
+    const px=x.g?x.w/x.g:-1,py=y.g?y.w/y.g:-1;
+    return py-px||y.w-x.w||(y.pf-y.pa)-(x.pf-x.pa);
+  });
+}
+
+/* ---------- render ---------- */
+const $=id=>document.getElementById(id);
+function render(){
+  $('cOut').textContent=S.settings.courts;
+  [...$('modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.settings.mode));
+  [...$('balSeg').children].forEach(b=>b.setAttribute('aria-pressed',(b.dataset.v==='1')===S.settings.balance));
+  $('hCount').textContent=S.archive.length||'';
+  ['players','matches','standings','cost','history','rules'].forEach(t=>{$('tab-'+t).setAttribute('aria-selected',S.tab===t);$('panel-'+t).hidden=S.tab!==t});
+  const live=S.players.filter(p=>!p.removed);
+  $('pCount').textContent=live.length;
+  $('rCount').textContent=S.rounds.length||'';
+  $('sampleBar').innerHTML=S.sample?`<div class="sample"><span><b>ข้อมูลตัวอย่าง</b> รายชื่อและคะแนนชุดนี้ใช้สาธิตการทำงาน ล้างแล้วใส่รายชื่อก๊วนของคุณได้เลย</span><button class="btn small" data-act="clearSample">ล้างตัวอย่าง</button></div>`:'';
+  renderPlayers();renderMatches();renderStandings();renderHistory();renderCost();
+}
+
+const MODE={doubles:'คู่',mixed:'คู่ผสม',singles:'เดี่ยว'};
+const fmtDate=t=>new Date(t).toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+const fmtTime=t=>new Date(t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+const isDone=c=>c.sa!=null&&c.sb!=null&&c.sa!==c.sb;
+
+function tableHtml(st,nameFn){
+  return `<div class="tbl"><table>
+    <thead><tr><th>#</th><th>ผู้เล่น</th><th>เล่น</th><th>ชนะ</th><th>แพ้</th><th>% ชนะ</th><th>แต้ม +/-</th></tr></thead>
+    <tbody>${st.map((s,i)=>{const d=s.pf-s.pa;return `<tr class="${i===0&&s.g?'top1':''}">
+      <td class="rank">${i+1}</td><td>${esc(nameFn(s.id))}</td><td class="n">${s.g}</td><td class="n">${s.w}</td><td class="n">${s.l}</td>
+      <td class="n">${s.g?Math.round(s.w/s.g*100)+'%':'–'}</td><td class="n ${d>0?'pos':d<0?'neg':''}">${d>0?'+':''}${d}</td></tr>`}).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderHistory(){
+  const cur=S.rounds.length?`<div class="hcur"><span>เซสชันปัจจุบันมี ${S.rounds.length} รอบ จะถูกบันทึกเข้าประวัติเมื่อกด “จบการแข่งขัน” ในหน้าแมตช์</span><button class="btn small" data-act="tab" data-v="matches">ไปหน้าแมตช์</button></div>`:'';
+  $('panel-history').innerHTML=`
+    <div class="row spread"><h2>ประวัติการแข่งขัน</h2><p class="hint">${S.archive.length} เซสชันที่บันทึกไว้</p></div>
+    ${cur}
+    ${S.archive.length?S.archive.map(sessionCard).join(''):`<div class="empty">ยังไม่มีเซสชันที่บันทึกไว้ เล่นจบแล้วกด “จบการแข่งขันและบันทึกประวัติ” ในหน้าแมตช์</div>`}`;
+}
+
+function sessionCard(s){
+  const n=id=>s.names[id]?s.names[id].n:'?';
+  const nh=id=>`<span class="gdot ${s.names[id]&&s.names[id].g||''}"></span>${esc(n(id))}`;
+  const games=s.rounds.reduce((a,r)=>a+r.courts.filter(isDone).length,0);
+  const st=standings(s.rounds,[]);
+  const modes=[...new Set(s.rounds.map(r=>MODE[r.mode]).filter(Boolean))].join(' / ');
+  const open=openHist===s.id;
+  const top=st[0]&&st[0].g?n(st[0].id):null;
+  return `<article class="hcard${open?' open':''}">
+    <button class="hhead" data-act="openHist" data-id="${s.id}" aria-expanded="${open}">
+      <span class="d">${fmtDate(s.start)}</span>
+      <span class="chev" aria-hidden="true">›</span>
+      <span class="m">${fmtTime(s.start)}–${fmtTime(s.end)}${modes?' · '+modes:''} · ${s.rounds.length} รอบ · ${games} เกม · ${Object.keys(s.names).length} คน${s.cost?` · ค่าใช้จ่ายคนละ ฿${fmt(s.cost.per)}`:''}${top?` · <b class="champ">อันดับ 1 ${esc(top)}</b>`:''}</span>
+    </button>
+    ${open?`<div class="hbody">${s.cost?histCost(s.cost):''}
+      ${st.length?tableHtml(st,n):'<p class="hint">เซสชันนี้ไม่ได้บันทึกคะแนน</p>'}
+      <div class="hrounds">${s.rounds.map((r,i)=>`
+        <div class="hround"><div class="lbl">รอบที่ ${i+1}${r.mode?' · '+MODE[r.mode]:''}</div>
+          ${r.courts.map((c,ci)=>{const d=isDone(c);return `<div class="hmatch">
+            <span class="ct">สนาม ${ci+1}</span>
+            <span class="tm${d&&c.sa>c.sb?' w':''}">${c.a.map(nh).join(' · ')}</span>
+            <span class="sc">${c.sa??'–'}<i>:</i>${c.sb??'–'}</span>
+            <span class="tm r${d&&c.sb>c.sa?' w':''}">${c.b.map(nh).join(' · ')}</span></div>`}).join('')}
+          ${r.sit.length?`<div class="hsit">พัก: ${r.sit.map(id=>esc(n(id))).join(', ')}</div>`:''}
+        </div>`).join('')}</div>
+      <div class="row" style="justify-content:flex-end"><button class="btn small warn${armed==='dh'+s.id?' armed':''}" data-act="delHist" data-id="${s.id}">${armed==='dh'+s.id?'กดอีกครั้งเพื่อลบเซสชันนี้':'ลบเซสชันนี้'}</button></div>
+    </div>`:''}
+  </article>`;
+}
+
+
+/* ---------- costs ---------- */
+const fmt=v=>(+v||0).toLocaleString('th-TH',{maximumFractionDigits:2});
+const num=v=>Math.max(0,+v||0);
+function costDefault(){return {courtCount:(S&&S.settings&&S.settings.courts)||2,hours:2,rate:200,shuttles:6,shuttlePrice:85,extras:[],round:1,exclude:[],winnerFree:0}}
+function participants(){
+  const seen=new Set();
+  S.rounds.forEach(r=>{r.sit.forEach(i=>seen.add(i));r.courts.forEach(c=>[...c.a,...c.b].forEach(i=>seen.add(i)))});
+  if(!seen.size)S.players.filter(p=>p.active&&!p.removed).forEach(p=>seen.add(p.id));
+  const order=id=>{const i=S.players.findIndex(p=>p.id===id);return i<0?1e9:i};
+  return [...seen].sort((a,b)=>order(a)-order(b));
+}
+function costCalc(){
+  const c=S.cost;
+  const court=num(c.courtCount)*num(c.hours)*num(c.rate);
+  const shuttle=num(c.shuttles)*num(c.shuttlePrice);
+  const items=[
+    {name:'ค่าสนาม',detail:`${fmt(num(c.courtCount))} สนาม × ${fmt(num(c.hours))} ชม. × ${fmt(num(c.rate))}`,amount:court},
+    {name:'ค่าลูกแบด',detail:`${fmt(num(c.shuttles))} ลูก × ${fmt(num(c.shuttlePrice))}`,amount:shuttle},
+    ...c.extras.filter(e=>num(e.amount)>0).map(e=>({name:(e.name||'').trim()||'รายการอื่น',detail:'',amount:num(e.amount)}))
+  ];
+  const total=items.reduce((t,i)=>t+i.amount,0);
+  const all=participants();
+  let free=[];const fst={};
+  if(c.winnerFree>0){
+    const st=standings(S.rounds,[]).filter(x=>x.g>0&&all.includes(x.id));
+    st.forEach(x=>fst[x.id]=x);
+    if(st.length){
+      const N=Math.min(c.winnerFree,st.length);
+      const key=x=>`${(x.w/x.g).toFixed(4)}|${x.w}|${x.pf-x.pa}`, cut=key(st[N-1]);
+      free=st.filter((x,i)=>i<N||key(x)===cut).map(x=>x.id);
+    }
+  }
+  const payers=all.filter(id=>!c.exclude.includes(id)&&!free.includes(id));
+  const n=payers.length, exact=n?total/n:0;
+  const per=c.round>0?Math.ceil(Math.round(exact*100)/100/c.round)*c.round:Math.round(exact*100)/100;
+  return {items,total,all,payers,free,fst,n,exact,per,collected:per*n};
+}
+function billHtml(k){
+  const r=S.cost.round;
+  const extra=k.collected-k.total;
+  return `<div class="bill-top"><span class="lbl">คนละ</span><span class="big">฿${fmt(k.per)}</span><span class="lbl">หาร ${k.n} คน</span></div>
+    <div class="lines">${k.items.map(i=>`<div class="ln2"><span>${esc(i.name)}${i.detail?`<small>${i.detail}</small>`:''}</span><b>${fmt(i.amount)}</b></div>`).join('')}
+      <div class="ln2 tot"><span>รวม</span><b>฿${fmt(k.total)}</b></div>
+      ${k.free.length?`<div class="freeline">ผู้ชนะไม่ต้องจ่าย: <b>${k.free.map(id=>esc(nm(id))).join(', ')}</b></div>`:''}
+      ${k.n&&Math.abs(extra)>0.005?`<div class="ln2 note"><span>เก็บได้ ${k.n} × ${fmt(k.per)}</span><b>฿${fmt(k.collected)} (เกิน ${fmt(extra)})</b></div>`:''}
+    </div>
+    <div class="row spread">
+      <div class="seg" role="group" aria-label="ปัดเศษ">${[[0,'ไม่ปัด'],[1,'ปัด 1'],[5,'ปัด 5'],[10,'ปัด 10']].map(([v,l])=>`<button data-act="round" data-v="${v}" aria-pressed="${r===v}">${l}</button>`).join('')}</div>
+      <button class="btn small" data-act="copyCost">คัดลอกสรุปไปส่งในกลุ่ม</button>
+    </div>`;
+}
+function costText(k){
+  const d=new Date(S.sessionStart||Date.now());
+  return [`BADMINTON MIX&MATCH · ${fmtDate(+d)}`,
+    ...k.items.map(i=>`${i.name}${i.detail?' ('+i.detail+')':''} = ${fmt(i.amount)}`),
+    `รวม ${fmt(k.total)} บาท / ${k.n} คน`,
+    `คนละ ${fmt(k.per)} บาท`,
+    ...(k.free.length?[`ผู้ชนะไม่ต้องจ่าย: ${k.free.map(nm).join(', ')}`]:[]),
+    `ผู้ร่วมหาร: ${k.payers.map(nm).join(', ')}`,
+    ...(payText()?[payText()]:[])].join('\n');
+}
+function renderCost(){
+  const c=S.cost, k=costCalc();
+  const f=(key,label,step)=>`<label class="fld"><span>${label}</span><input type="number" inputmode="decimal" min="0" step="${step||1}" id="c-${key}" data-act="cost" data-k="${key}" value="${c[key]}"></label>`;
+  $('panel-cost').innerHTML=`
+    <div class="row spread"><h2>ค่าใช้จ่าย</h2><p class="hint">${S.rounds.length?'หารกับผู้เล่นในเซสชันนี้':'ยังไม่เริ่มเซสชัน ตอนนี้หารกับผู้เล่นที่พร้อมเล่นทั้งหมด'}</p></div>
+    <div class="costgrid">
+      <div class="ccard"><div class="ch3">ค่าสนาม <b id="sub-court">${fmt(k.items[0].amount)}</b></div>
+        <div class="fields">${f('courtCount','จำนวนสนาม')}${f('hours','ชั่วโมง',0.5)}${f('rate','บาท / สนาม / ชม.')}</div></div>
+      <div class="ccard"><div class="ch3">ค่าลูกแบด <b id="sub-shuttle">${fmt(k.items[1].amount)}</b></div>
+        <div class="fields">${f('shuttles','จำนวนลูกที่ใช้')}${f('shuttlePrice','บาท / ลูก')}</div>
+        <p class="hint">ซื้อเป็นหลอด 12 ลูก ใส่ราคาหลอด ÷ 12</p></div>
+      <div class="ccard"><div class="ch3">รายการอื่น ๆ</div>
+        ${c.extras.length?`<div class="extras">${c.extras.map(e=>`<div class="exrow">
+          <input type="text" id="ex-n-${e.id}" data-act="extra" data-id="${e.id}" data-k="name" value="${esc(e.name)}" placeholder="ชื่อรายการ เช่น ค่าน้ำ" aria-label="ชื่อรายการ">
+          <input type="number" inputmode="decimal" min="0" id="ex-a-${e.id}" data-act="extra" data-id="${e.id}" data-k="amount" value="${e.amount}" placeholder="บาท" aria-label="จำนวนเงิน">
+          <button class="x" data-act="delExtra" data-id="${e.id}" aria-label="ลบรายการ">×</button></div>`).join('')}</div>`:''}
+        <button class="btn small" data-act="addExtra">+ เพิ่มรายการ</button></div>
+      <div class="ccard"><div class="ch3">ผู้ร่วมหาร <b>${k.n} / ${k.all.length} คน</b></div>
+        ${k.all.length?`<div class="payers">${k.all.map(id=>k.free.includes(id)?`<span class="pchip free">${esc(nm(id))} · ฟรี</span>`:`<button class="pchip" data-act="payer" data-id="${id}" aria-pressed="${!c.exclude.includes(id)}">${esc(nm(id))}</button>`).join('')}</div>
+        <p class="hint">แตะชื่อเพื่อไม่นับคนนั้นในการหาร</p>`:'<p class="hint">ยังไม่มีผู้เล่น</p>'}</div>
+      <div class="ccard"><div class="ch3">ผู้ชนะไม่ต้องจ่าย</div>
+        <div class="seg" role="group" aria-label="ผู้ชนะไม่ต้องจ่าย">${[[0,'ปิด'],[1,'อันดับ 1'],[2,'อันดับ 1–2'],[3,'อันดับ 1–3']].map(([v,l])=>`<button data-act="winFree" data-v="${v}" aria-pressed="${(c.winnerFree||0)===v}">${l}</button>`).join('')}</div>
+        ${!c.winnerFree?'<p class="hint">เปิดเพื่อให้ผู้เล่นอันดับต้นในตารางอันดับของเซสชันนี้ไม่ต้องจ่าย ถ้าสถิติเท่ากันจะได้ฟรีทุกคนที่เท่ากัน</p>'
+          :k.free.length?`<div class="winners">${k.free.map((id,i)=>{const x=k.fst[id];return `<div class="ln2"><span>${esc(nm(id))}</span><b>ชนะ ${x.w}/${x.g} · ${x.pf-x.pa>0?'+':''}${x.pf-x.pa}</b></div>`}).join('')}</div>`
+          :'<p class="hint">ยังไม่มีผลการแข่ง ใส่คะแนนในหน้าแมตช์แล้วระบบจะเลือกผู้ชนะให้</p>'}
+      </div>
+    </div>
+    <div class="bill" id="bill">${billHtml(k)}</div>
+    <div class="ccard paycard" id="paycard">${payHtml(k)}</div>
+    <textarea id="copyBox" class="copybox" readonly hidden aria-label="ข้อความสรุปค่าใช้จ่าย"></textarea>`;
+}
+function updateCostLive(){
+  const k=costCalc();
+  $('bill').innerHTML=billHtml(k);
+  $('sub-court').textContent=fmt(k.items[0].amount);
+  $('sub-shuttle').textContent=fmt(k.items[1].amount);
+  const pv=$('payPreview');if(pv)pv.innerHTML=payPreview(k);
+}
+function histCost(c){
+  return `<div class="hcost"><div class="ch3">ค่าใช้จ่าย <b>รวม ฿${fmt(c.total)} · คนละ ฿${fmt(c.per)} (${c.n} คน)</b></div>
+    ${c.items.map(i=>`<div class="ln2"><span>${esc(i.name)}${i.detail?`<small>${i.detail}</small>`:''}</span><b>${fmt(i.amount)}</b></div>`).join('')}
+    ${c.free&&c.free.length?`<div class="freeline">ผู้ชนะไม่ต้องจ่าย: <b>${c.free.map(esc).join(', ')}</b></div>`:''}</div>`;
+}
+
+
+/* ---------- payment ---------- */
+const BANKS=['กสิกรไทย','ไทยพาณิชย์','กรุงเทพ','กรุงไทย','กรุงศรีอยุธยา','ทหารไทยธนชาต (ttb)','ออมสิน','ธ.ก.ส.','ยูโอบี','ซีไอเอ็มบี ไทย','เกียรตินาคินภัทร','แลนด์ แอนด์ เฮ้าส์','อื่น ๆ'];
+const payDefault=()=>({method:'promptpay',bank:'กสิกรไทย',acct:'',name:'',pp:'',ppName:'',qr:null});
+function crc16(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF}return c.toString(16).toUpperCase().padStart(4,'0')}
+function ppPayload(id,amount){
+  const d=String(id||'').replace(/\D/g,'');let acc;
+  if(d.length===10&&d[0]==='0')acc='01'+'13'+'0066'+d.slice(1);
+  else if(d.length===13)acc='02'+'13'+d;
+  else if(d.length===15)acc='03'+'15'+d;
+  else return null;
+  const t=(k,v)=>k+String(v.length).padStart(2,'0')+v;
+  let p=t('00','01')+t('01',amount>0?'12':'11')+t('29','0016A000000677010111'+acc)+t('58','TH')+t('53','764')+(amount>0?t('54',amount.toFixed(2)):'')+'6304';
+  return p+crc16(p);
+}
+function qrImg(payload){
+  if(typeof qrcode!=='function')return '';
+  try{const q=qrcode(0,'M');q.addData(payload);q.make();return q.createDataURL(6,3)}catch(e){return ''}
+}
+function payText(){
+  const p=S.pay;
+  if(p.method==='bank'&&p.acct)return `โอนเข้า: ธ.${p.bank} ${p.acct}${p.name?' ชื่อ '+p.name:''}`;
+  if(p.method==='promptpay'&&p.pp)return `พร้อมเพย์: ${p.pp}${p.ppName?' ('+p.ppName+')':''}`;
+  if(p.method==='qr'&&p.qr)return 'ชำระผ่าน QR Code ที่ผู้จัดส่งให้';
+  return '';
+}
+function payPreview(k){
+  const p=S.pay;
+  if(p.method==='bank'){
+    if(!p.acct)return '<p class="hint">ใส่เลขที่บัญชีเพื่อแสดงให้ผู้เล่นโอน</p>';
+    return `<div class="paybox"><div class="lbl">ธนาคาร${esc(p.bank)}</div><div class="acct">${esc(p.acct)}</div>${p.name?`<div>${esc(p.name)}</div>`:''}
+      <button class="btn small" data-act="copyAcct">คัดลอกเลขบัญชี</button></div>`;
+  }
+  if(p.method==='promptpay'){
+    if(!p.pp)return '<p class="hint">ใส่เบอร์มือถือหรือเลขบัตรประชาชนที่ผูกพร้อมเพย์ ระบบจะสร้าง QR ใส่ยอดคนละให้อัตโนมัติ</p>';
+    const pl=ppPayload(p.pp,k.per);
+    if(!pl)return '<p class="hint err">รูปแบบไม่ถูกต้อง ใส่เบอร์มือถือ 10 หลัก หรือเลขบัตรประชาชน 13 หลัก</p>';
+    const img=qrImg(pl);
+    return `<div class="paybox">${img?`<img class="qr" src="${img}" alt="QR พร้อมเพย์ ยอด ${fmt(k.per)} บาท">`:'<p class="hint">สร้างรูป QR ไม่ได้ในตอนนี้ ลองเปิดหน้านี้ใหม่อีกครั้ง</p>'}
+      <div class="lbl">สแกนจ่ายพร้อมเพย์</div><div class="acct">฿${fmt(k.per)}</div><div>${esc(p.pp)}${p.ppName?' · '+esc(p.ppName):''}</div></div>`;
+  }
+  return p.qr?`<div class="paybox"><img class="qr up" src="${p.qr}" alt="QR Code สำหรับชำระเงิน"><div class="lbl">สแกนจ่ายคนละ</div><div class="acct">฿${fmt(k.per)}</div>
+      <div class="row" style="justify-content:center"><label class="btn small" for="qrFile">เปลี่ยนรูป</label><button class="btn small warn" data-act="qrRemove">ลบรูป</button></div></div>`
+    :`<label class="drop" for="qrFile"><b>อัปโหลดรูป QR Code</b><span>เช่น QR รับเงินจากแอพธนาคาร</span></label>`;
+}
+function payHtml(k){
+  const p=S.pay;
+  const fields=p.method==='bank'?`<div class="fields">
+      <label class="fld"><span>ธนาคาร</span><select id="pay-bank" data-act="pay" data-k="bank">${BANKS.map(b=>`<option${b===p.bank?' selected':''}>${b}</option>`).join('')}</select></label>
+      <label class="fld"><span>เลขที่บัญชี</span><input type="text" inputmode="numeric" id="pay-acct" data-act="pay" data-k="acct" value="${esc(p.acct)}" placeholder="xxx-x-xxxxx-x"></label>
+      <label class="fld"><span>ชื่อบัญชี</span><input type="text" id="pay-name" data-act="pay" data-k="name" value="${esc(p.name)}" placeholder="ชื่อ-นามสกุล"></label></div>`
+    :p.method==='promptpay'?`<div class="fields">
+      <label class="fld"><span>เบอร์มือถือ / เลขบัตรประชาชน</span><input type="text" inputmode="numeric" id="pay-pp" data-act="pay" data-k="pp" value="${esc(p.pp)}" placeholder="08xxxxxxxx"></label>
+      <label class="fld"><span>ชื่อบัญชี (ไม่บังคับ)</span><input type="text" id="pay-ppName" data-act="pay" data-k="ppName" value="${esc(p.ppName)}" placeholder="ชื่อที่จะขึ้นตอนโอน"></label></div>`:'';
+  return `<div class="ch3">ช่องทางการชำระเงิน</div>
+    <div class="seg" role="group" aria-label="ช่องทางการชำระเงิน">${[['bank','บัญชีธนาคาร'],['promptpay','พร้อมเพย์'],['qr','QR Code']].map(([v,l])=>`<button data-act="payMethod" data-v="${v}" aria-pressed="${p.method===v}">${l}</button>`).join('')}</div>
+    ${fields}
+    <input type="file" accept="image/*" id="qrFile" hidden>
+    <div id="payPreview">${payPreview(k)}</div>`;
+}
+
+function archiveSession(){
+  if(!S.rounds.length)return false;
+  const ids=new Set();
+  S.rounds.forEach(r=>{r.sit.forEach(i=>ids.add(i));r.courts.forEach(c=>[...c.a,...c.b].forEach(i=>ids.add(i)))});
+  const names={};ids.forEach(id=>{const p=P(id);names[id]={n:p?p.name:'?',g:p&&p.g||''}});
+  const cc=costCalc();
+  const cost=cc.total>0?{items:cc.items,total:cc.total,n:cc.n,per:cc.per,payers:cc.payers.map(nm),free:cc.free.map(nm)}:null;
+  S.archive.unshift({id:uid(),start:S.sessionStart||Date.now(),end:Date.now(),names,rounds:S.rounds,cost});
+  if(S.cost){S.cost.exclude=[];S.cost.extras=[];}
+  S.rounds=[];S.sessionStart=null;
+  return true;
+}
+
+function renderPlayers(){
+  const h=history();
+  const live=S.players.filter(p=>!p.removed);
+  const ready=live.filter(p=>p.active).length;
+  const {M,F,U}=plan();
+  $('panel-players').innerHTML=`
+    <form class="add" id="addForm">
+      <input type="text" id="addName" placeholder="ชื่อผู้เล่น (ใส่หลายชื่อคั่นด้วย , ได้)" autocomplete="off">
+      <select id="addGender" aria-label="เพศ"><option value="m"${addG==='m'?' selected':''}>ชาย</option><option value="f"${addG==='f'?' selected':''}>หญิง</option></select>
+      <select id="addLevel" aria-label="ระดับฝีมือ">${[1,2,3,4,5].map(l=>`<option value="${l}"${l===3?' selected':''}>${l} · ${LV[l]}</option>`).join('')}</select>
+      <button class="btn primary" type="submit" style="font-size:15px;padding:8px 16px">เพิ่ม</button>
+    </form>
+    <div class="row spread"><h2>รายชื่อ</h2>
+      <div class="gsum"><span>พร้อมเล่น <b>${ready}</b></span><span style="color:var(--male)">ชาย <b>${M}</b></span><span style="color:var(--female)">หญิง <b>${F}</b></span>${U?`<span>ยังไม่ระบุเพศ <b>${U}</b></span>`:''}</div></div>
+    <p class="hint">กดปุ่ม ช/ญ เพื่อสลับเพศ · ปิดสวิตช์เมื่อมีคนกลับก่อนหรือขอพัก</p>
+    ${live.length?`<div class="plist">${live.map(p=>`
+      <div class="pl${p.active?'':' off'}">
+        <button class="tog" data-act="toggle" data-id="${p.id}" aria-pressed="${p.active}" aria-label="พร้อมเล่น: ${esc(p.name)}"></button>
+        <div style="min-width:0"><div class="nm">${esc(p.name)}</div><div class="meta">เล่น ${h.played[p.id]||0} · พัก ${h.sat[p.id]||0}</div></div>
+        <div class="ctl">
+          <button class="gbtn ${p.g||''}" data-act="gender" data-id="${p.id}" aria-label="เพศของ ${esc(p.name)}: ${gname[p.g]||'ยังไม่ระบุ'} กดเพื่อสลับ">${GL[p.g]||'?'}</button>
+          <select data-act="level" data-id="${p.id}" id="lv-${p.id}" aria-label="ระดับฝีมือ ${esc(p.name)}">${[1,2,3,4,5].map(l=>`<option value="${l}"${l===p.level?' selected':''}>Lv${l}</option>`).join('')}</select>
+          <button class="x${armed==='rm'+p.id?' armed':''}" data-act="remove" data-id="${p.id}" aria-label="ลบ ${esc(p.name)}" title="${armed==='rm'+p.id?'กดอีกครั้งเพื่อลบ':'ลบ'}">×</button>
+        </div>
+      </div>`).join('')}</div>`:`<div class="empty">ยังไม่มีผู้เล่น พิมพ์ชื่อด้านบนเพื่อเริ่มก๊วน</div>`}`;
+}
+
+function renderMatches(){
+  const pl=plan();
+  const ready=pl.act.length, courts=pl.courts;
+  const nameHtml=id=>{const p=P(id);return `<span class="gdot ${p&&p.g||''}"></span>${esc(nm(id))}`};
+  const rounds=S.rounds.map((r,i)=>({r,i})).reverse();
+  let mixNote='';
+  if(pl.mode==='mixed'){
+    mixNote=`<p class="hint">คู่ผสม: ทุกทีมมีชาย 1 หญิง 1 · พร้อมเล่น ชาย ${pl.M} หญิง ${pl.F}`+
+      (courts<S.settings.courts?` · เปิดได้ ${courts} จาก ${S.settings.courts} สนาม เพราะ${pl.M<pl.F?'ผู้ชาย':'ผู้หญิง'}ไม่พอ`:'')+
+      (pl.U?` · มี ${pl.U} คนที่ยังไม่ระบุเพศจะไม่ถูกจัดลงสนาม`:'')+`</p>`;
+  }
+  $('panel-matches').innerHTML=`
+    <div class="row spread">
+      <button class="btn primary" data-act="next">จัดรอบที่ ${S.rounds.length+1}</button>
+      <span class="hint">พร้อม ${ready} คน → ลง ${courts} สนาม · พัก ${pl.sitN} คน</span>
+    </div>${mixNote}
+    ${rounds.length?rounds.map(({r,i})=>`
+      <div class="round">
+        <div class="rhead"><h3>รอบที่ ${i+1}</h3>${i===S.rounds.length-1?'<span class="now">รอบปัจจุบัน</span>':''}</div>
+        <div class="courts">${r.courts.map((c,ci)=>{
+          const done=c.sa!=null&&c.sb!=null&&c.sa!==c.sb;
+          return `<div class="court">
+            <div class="ch"><b>สนาม ${ci+1}</b><span>${done?'จบเกม':'ใส่คะแนน'}</span></div>
+            <div class="cv">
+              ${courtSVG(done?(c.sa>c.sb?'a':'b'):'')}
+              <div class="half a${done&&c.sa>c.sb?' win':''}">${c.a.map(id=>`<div class="box">${nameHtml(id)}</div>`).join('')}</div>
+              <div class="half b${done&&c.sb>c.sa?' win':''}">${c.b.map(id=>`<div class="box">${nameHtml(id)}</div>`).join('')}</div>
+            </div>
+            <div class="scorebar">
+              <input class="score" type="number" inputmode="numeric" min="0" max="99" id="s-${r.id}-${ci}-a" data-act="score" data-r="${i}" data-c="${ci}" data-s="sa" value="${c.sa??''}" placeholder="–" aria-label="คะแนนฝั่งซ้าย สนาม ${ci+1}">
+              <span class="vs">แต้ม</span>
+              <input class="score" type="number" inputmode="numeric" min="0" max="99" id="s-${r.id}-${ci}-b" data-act="score" data-r="${i}" data-c="${ci}" data-s="sb" value="${c.sb??''}" placeholder="–" aria-label="คะแนนฝั่งขวา สนาม ${ci+1}">
+            </div></div>`}).join('')}</div>
+        ${r.sit.length?`<div class="sit"><span class="lbl">พักรอบนี้</span>${r.sit.map(id=>`<span class="chip">${esc(nm(id))}</span>`).join('')}</div>`:''}
+      </div>`).join(''):`<div class="empty">ยังไม่มีแมตช์ กด “จัดรอบที่ 1” เพื่อสุ่มคู่ลงสนาม</div>`}
+    <footer>
+      ${S.rounds.length?`<button class="btn small warn${armed==='undo'?' armed':''}" data-act="undo">${armed==='undo'?'กดอีกครั้งเพื่อลบรอบ '+S.rounds.length:'ลบรอบล่าสุด'}</button>`:''}
+      ${S.rounds.length?`<button class="btn small${armed==='resetRounds'?' armed':''}" data-act="resetRounds">${armed==='resetRounds'?'กดอีกครั้งเพื่อจบการแข่งขัน':'จบการแข่งขันและบันทึกประวัติ'}</button>`:''}
+    </footer>`;
+}
+
+function renderStandings(){
+  const st=standings(S.rounds,S.players.filter(p=>!p.removed).map(p=>p.id));
+  const any=st.some(s=>s.g>0);
+  $('panel-standings').innerHTML=`
+    <div class="row spread"><h2>ตารางอันดับ</h2><p class="hint">เซสชันปัจจุบัน · เรียงตาม % ชนะ แล้วจำนวนชนะ แล้วแต้มได้-เสีย</p></div>
+    ${any?tableHtml(st,nm):`<div class="empty">ยังไม่มีผลการแข่ง ใส่คะแนนในหน้าแมตช์แล้วอันดับจะขึ้นที่นี่</div>`}`;
+}
+
+let toastT;
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200)}
+function arm(key){
+  if(armed===key){clearTimeout(armTimer);armed=null;return true}
+  armed=key;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed=null;render()},3500);render();return false;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.tagName==='SELECT'||b.tagName==='INPUT')return;
+  const a=b.dataset.act;
+  if(a==='tab'){S.tab=b.dataset.v}
+  else if(a==='courts'){S.settings.courts=Math.max(1,Math.min(20,S.settings.courts+ +b.dataset.d))}
+  else if(a==='mode'){S.settings.mode=b.dataset.v}
+  else if(a==='bal'){S.settings.balance=b.dataset.v==='1'}
+  else if(a==='next'){generate(false)}
+  else if(a==='toggle'){const p=P(b.dataset.id);p.active=!p.active}
+  else if(a==='gender'){const p=P(b.dataset.id);p.g=p.g==='m'?'f':'m'}
+  else if(a==='remove'){
+    if(!arm('rm'+b.dataset.id))return;
+    const id=b.dataset.id,used=S.rounds.some(r=>r.sit.includes(id)||r.courts.some(c=>c.a.includes(id)||c.b.includes(id)));
+    if(used){const p=P(id);p.removed=true;p.active=false}else S.players=S.players.filter(p=>p.id!==id);
+  }
+  else if(a==='undo'){if(!arm('undo'))return;S.rounds.pop();toast('ลบรอบล่าสุดแล้ว')}
+  else if(a==='resetRounds'){if(!arm('resetRounds'))return;archiveSession();S.players=S.players.filter(p=>!p.removed);toast('บันทึกเซสชันลงประวัติแล้ว เริ่มรอบใหม่ได้เลย')}
+  else if(a==='addExtra'){const id=uid();S.cost.extras.push({id,name:'',amount:''});save();render();setTimeout(()=>{const el=$('ex-n-'+id);el&&el.focus()},0);return}
+  else if(a==='delExtra'){S.cost.extras=S.cost.extras.filter(x=>x.id!==b.dataset.id)}
+  else if(a==='payer'){const id=b.dataset.id,ex=S.cost.exclude;const i=ex.indexOf(id);i<0?ex.push(id):ex.splice(i,1)}
+  else if(a==='round'){S.cost.round=+b.dataset.v}
+  else if(a==='payMethod'){S.pay.method=b.dataset.v}
+  else if(a==='qrRemove'){S.pay.qr=null}
+  else if(a==='copyAcct'){const t=S.pay.acct.replace(/\D/g,'');try{navigator.clipboard.writeText(t).then(()=>toast('คัดลอกเลขบัญชีแล้ว'),()=>toast('เลขบัญชี: '+t))}catch(err){toast('เลขบัญชี: '+t)}return}
+  else if(a==='winFree'){S.cost.winnerFree=+b.dataset.v}
+  else if(a==='copyCost'){
+    const txt=costText(costCalc());const box=$('copyBox');
+    const fallback=()=>{box.value=txt;box.hidden=false;box.focus();box.select();toast('เลือกข้อความแล้ว กดคัดลอกได้เลย')};
+    try{navigator.clipboard.writeText(txt).then(()=>{box.hidden=true;toast('คัดลอกสรุปแล้ว วางในแชทกลุ่มได้เลย')},fallback)}catch(err){fallback()}
+    return;
+  }
+  else if(a==='openHist'){openHist=openHist===b.dataset.id?null:b.dataset.id;render();return}
+  else if(a==='delHist'){if(!arm('dh'+b.dataset.id))return;S.archive=S.archive.filter(s=>s.id!==b.dataset.id);openHist=null;toast('ลบเซสชันแล้ว')}
+  else if(a==='clearSample'){S.players=[];S.rounds=[];S.archive=[];S.sample=false;S.tab='players';render();save();setTimeout(()=>$('addName')&&$('addName').focus(),0);return}
+  save();render();
+});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.id==='qrFile'&&el.files&&el.files[0]){
+    const file=el.files[0];
+    if(!/^image\//.test(file.type)){toast('เลือกไฟล์รูปภาพเท่านั้น');return}
+    const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();im.onload=()=>{
+      const m=720,sc=Math.min(1,m/Math.max(im.width,im.height));const cv=document.createElement('canvas');
+      cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);const cx=cv.getContext('2d');
+      cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(im,0,0,cv.width,cv.height);
+      S.pay.qr=cv.toDataURL('image/jpeg',0.9);save();render();toast('บันทึกรูป QR แล้ว')};
+      im.onerror=()=>toast('เปิดรูปนี้ไม่ได้ ลองไฟล์อื่น');im.src=rd.result};
+    rd.readAsDataURL(file);el.value='';return;
+  }
+  if(el.dataset.act==='pay'&&el.tagName==='SELECT'){S.pay[el.dataset.k]=el.value;save();const pv=$('payPreview');if(pv)pv.innerHTML=payPreview(costCalc())}
+  if(el.dataset.act==='level'){P(el.dataset.id).level=+el.value;save()}
+  if(el.dataset.act==='score'){
+    const c=S.rounds[+el.dataset.r].courts[+el.dataset.c];
+    const v=el.value.trim();c[el.dataset.s]=v===''?null:Math.max(0,Math.min(99,parseInt(v,10)||0));
+    save();renderMatches();renderStandings();renderCost();
+  }
+});
+document.addEventListener('input',e=>{
+  const el=e.target,k=el.dataset.k;
+  if(el.dataset.act==='cost'){S.cost[k]=el.value===''?'':+el.value;save();updateCostLive()}
+  else if(el.dataset.act==='pay'){S.pay[k]=el.value;save();const pv=$('payPreview');if(pv)pv.innerHTML=payPreview(costCalc())}
+  else if(el.dataset.act==='extra'){const x=S.cost.extras.find(x=>x.id===el.dataset.id);if(!x)return;x[k]=k==='amount'?(el.value===''?'':+el.value):el.value;save();updateCostLive()}
+});
+document.addEventListener('submit',e=>{
+  if(e.target.id!=='addForm')return;e.preventDefault();
+  const names=$('addName').value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
+  if(!names.length){toast('พิมพ์ชื่อผู้เล่นก่อนกดเพิ่ม');return}
+  const lv=+$('addLevel').value; addG=$('addGender').value;
+  names.forEach(n=>S.players.push({id:uid(),name:n.slice(0,24),level:lv,g:addG,active:true}));
+  save();render();toast(`เพิ่ม ${names.length} คนแล้ว`);$('addName').focus();
+});
+
+(async function boot(){
+  if(Pref){try{const r=await Pref.get({key:KEY});if(r&&r.value)S=JSON.parse(r.value)}catch(e){}}
+  if(!S)S=load();
+  if(!S||!S.players)seed();
+  if(!S.archive)S.archive=[];
+  if(!S.cost)S.cost=costDefault();
+  if(!S.pay)S.pay=payDefault();
+  render();
+})();
+})();
+</script>
+
+</body>
+</html>

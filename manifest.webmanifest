@@ -1,0 +1,17 @@
+{
+  "name": "Badminton Mix&Match",
+  "short_name": "Mix&Match",
+  "description": "จัดคู่แบดมินตันแบบสลับคู่ทุกรอบ คู่ผสม บันทึกคะแนน ประวัติ และหารค่าใช้จ่าย",
+  "lang": "th",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1f6a47",
+  "theme_color": "#1f6a47",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
