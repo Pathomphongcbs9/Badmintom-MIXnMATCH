@@ -1,5 +1,5 @@
 // Offline support. Bump VERSION whenever you deploy changes so phones pick up the new version.
-const VERSION = 'mixmatch-v12';
+const VERSION = 'mixmatch-v17';
 const CORE = ['/', '/index.html', '/config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/apple-touch-icon.png'];
 // Only these outside files are cached (fonts and libraries). Supabase data is never cached here.
 const CDN = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];

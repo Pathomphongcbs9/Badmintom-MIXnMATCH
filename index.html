@@ -234,7 +234,7 @@ label.btn{cursor:pointer;display:inline-block}
 .linkbtn{border:0;background:none;color:var(--ink);text-decoration:underline;padding:0;font-size:inherit}
 .chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-basis:100%}
 .at-home .settings,.at-home #sampleBar,.at-home nav.tabs,.at-home section.panel{display:none!important}
-.ro .settings,.ro #addForm,.ro #panel-matches footer,.ro [data-act=next],.ro .x,.ro .costgrid,.ro #panel-cost .seg,.ro .paycard .fields,.ro [data-act=delHist],.ro .drop,.ro label[for=qrFile],.ro [data-act=qrRemove],.ro #panel-players > .hint{display:none!important}
+.ro .settings,.ro #addForm,.ro #panel-matches footer,.ro [data-act=next],.ro [data-act=auto],.ro .x,.ro .costgrid,.ro #panel-cost .seg,.ro .paycard .fields,.ro [data-act=delHist],.ro .drop,.ro label[for=qrFile],.ro [data-act=qrRemove],.ro #panel-players > .hint{display:none!important}
 .ro .tog,.ro .gbtn,.ro .pl select{pointer-events:none}
 .ro .score:disabled{opacity:1;color:var(--court-ink);-webkit-text-fill-color:var(--court-ink);background:rgba(255,255,255,.08)}
 .ro .pl select:disabled{opacity:1;color:var(--ink);-webkit-text-fill-color:var(--ink)}
@@ -358,6 +358,9 @@ table.share{min-width:0;width:100%}
 .hin{width:64px;border:1px solid var(--rule);background:var(--bg);border-radius:6px;padding:5px 6px;font-size:16px;font-family:var(--f-num);text-align:center;color:var(--ink)}
 .share input[type=checkbox]{width:20px;height:20px;accent-color:var(--court)}
 .allocard{grid-column:1/-1}
+.rmove{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px}
+.rhead{align-items:center}
+.chip.twice{background:var(--surface);border:1px solid var(--shuttle);color:var(--ink)}
 /* rules */
 .rules{display:grid;gap:14px}
 .rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px 20px}
@@ -456,12 +459,14 @@ footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
           <li>ระบบเลี่ยงการจับคู่กับคนเดิมซ้ำ และเลี่ยงการเจอคู่แข่งหน้าเดิมบ่อย ๆ</li>
           <li>โหมด “ถัวฝีมือ” รวมเลเวล (1–5) ของสองฝั่งให้ใกล้เคียงกัน ส่วน “สุ่มล้วน” ไม่ดูเลเวล</li>
           <li>ผู้เล่นที่ปิดสวิตช์ “พร้อมเล่น” จะไม่ถูกจัดลงสนาม</li>
+          <li>สลับลำดับรอบได้เองด้วยปุ่ม “สลับกับรอบ…” ที่หัวแต่ละรอบ คะแนนจะย้ายไปพร้อมรอบนั้น ชื่อคนที่พักติดกัน 2 รอบจะมีกรอบสีส้มและคำว่า “พักติด” ช่วยให้เห็นว่าควรสลับรอบไหน</li>
+          <li>ปุ่ม “จัดรอบอัตโนมัติให้พบกันหมด” จะคำนวณจำนวนรอบที่ทำให้ทุกคนได้เป็นคู่แข่งกันครบทุกคน (คู่ผสม: ชายเจอชายทุกคน หญิงเจอหญิงทุกคน และชายแต่ละคนได้จับคู่กับหญิงครบทุกคน เช่น ชาย 4 หญิง 4 = 16 คู่ขา ใช้ 8 เกม) แล้วเพิ่มรอบให้ทีเดียว พร้อมเกลี่ยให้ทุกคนได้เล่นจำนวนเกมใกล้เคียงกัน กดครั้งแรกเพื่อดูว่าต้องเพิ่มกี่รอบ กดอีกครั้งเพื่อยืนยัน</li>
         </ul>
       </div>
       <div class="rule">
         <h3>คู่ผสม</h3>
         <ul>
-          <li>ทุกทีมต้องมีชาย 1 คน และหญิง 1 คน</li>
+          <li>ทุกทีมต้องมีชาย 1 คน และหญิง 1 คน ระบบจะหมุนให้ผู้ชายแต่ละคนได้จับคู่กับผู้หญิงครบทุกคน</li>
           <li>ผู้ชายในสนามเดียวกันจะเป็นคู่แข่งกันโดยตรง (ผู้หญิงก็เช่นกัน) ระบบจะหมุนให้ผู้ชายได้เจอผู้ชายทุกคน และผู้หญิงได้เจอผู้หญิงทุกคนวนกันไป ก่อนจะกลับมาเจอคนเดิมซ้ำ และพยายามไม่ให้เจอคู่แข่งคนเดิมสองรอบติด</li>
           <li>หมุนคนพักแยกกันในฝั่งชายและฝั่งหญิง ฝั่งที่คนเยอะกว่าจะได้พักบ่อยกว่า</li>
           <li>จำนวนสนามที่เปิดได้ขึ้นกับเพศที่มีคนน้อยกว่า</li>
@@ -535,7 +540,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const pk=(a,b)=>a<b?a+'|'+b:b+'|'+a;
 
-let S=null, armed=null, armTimer=null, addG='m', openHist=null;
+let S=null, armed=null, armTimer=null, addG='m', openHist=null, autoPlan=null;
 const Pref=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Preferences;
 function save(){if(typeof APPMODE!=='undefined'&&(APPMODE==='viewer'||APPMODE==='home'))return;const v=JSON.stringify(S);try{localStorage.setItem(KEY,v)}catch(e){}if(Pref){try{Pref.set({key:KEY,value:v})}catch(e){}}if(typeof queueCloud==='function')queueCloud();}
 function load(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null}catch(e){return null}}
@@ -632,7 +637,8 @@ function generate(silent){
   const lvl=id=>P(id).level||3;
   const teamCost=(a,b)=>{
     let c=0;
-    [a,b].forEach(t=>{if(t.length===2){const n=h.partner[pk(t[0],t[1])]||0;c+=n*n*10}});
+    // mixed: every man should partner every woman too, so repeated partners weigh as much as repeated opponents
+    [a,b].forEach(t=>{if(t.length===2){const n=h.partner[pk(t[0],t[1])]||0;c+=n*n*(mode==='mixed'?40:10)}});
     a.forEach(x=>b.forEach(y=>{const k=pk(x,y),n=h.opp[k]||0;
       // in mixed doubles the two men (and the two women) face each other directly: rotate them hard
       const same=mode==='mixed'&&(P(x)||{}).g===(P(y)||{}).g;
@@ -668,6 +674,47 @@ function generate(silent){
   return true;
 }
 
+/* ---------- auto schedule: keep adding rounds until everyone has faced everyone ---------- */
+function meetGoal(st){
+  const act=st.players.filter(p=>p.active&&!p.removed),mode=st.settings.mode;
+  const opp=new Set();st.rounds.forEach(r=>r.courts.forEach(c=>c.a.forEach(x=>c.b.forEach(y=>opp.add(pk(x,y))))));
+  const groups=mode==='mixed'?[act.filter(p=>p.g==='m'),act.filter(p=>p.g==='f')]:[act];
+  let need=0,missing=0;
+  groups.forEach(g=>{for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){need++;if(!opp.has(pk(g[i].id,g[j].id)))missing++}});
+  if(mode==='mixed'){
+    // every man must also have partnered every woman
+    const part=new Set();st.rounds.forEach(r=>r.courts.forEach(c=>[c.a,c.b].forEach(t=>{if(t.length===2)part.add(pk(t[0],t[1]))})));
+    groups[0].forEach(m=>groups[1].forEach(f=>{need++;if(!part.has(pk(m.id,f.id)))missing++}));
+  }
+  const pl={};st.rounds.forEach(r=>r.courts.forEach(c=>[...c.a,...c.b].forEach(i=>pl[i]=(pl[i]||0)+1)));
+  const spread=Math.max(0,...groups.filter(g=>g.length).map(g=>{const v=g.map(p=>pl[p.id]||0);return Math.max(...v)-Math.min(...v)}));
+  let dbl=0;for(let i=1;i<st.rounds.length;i++){const prev=new Set(st.rounds[i-1].sit);st.rounds[i].sit.forEach(id=>{if(prev.has(id))dbl++})}
+  return {need,missing,spread,dbl};
+}
+function planAuto(){
+  const g0=meetGoal(S);
+  if(!g0.need){toast('ต้องมีผู้เล่นที่พร้อมเล่นอย่างน้อย 2 คน');return null}
+  if(!g0.missing&&g0.spread<=1){toast('ในเซสชันนี้ทุกคนได้พบกันครบแล้ว');return null}
+  // try several random plans and keep the shortest one that meets everyone with the fairest games
+  const saved=S;let res=null;
+  const score=r=>(r.goal.missing*1000)+r.rounds.length*10+r.goal.spread;
+  try{
+    for(let trial=0;trial<16;trial++){
+      S=JSON.parse(JSON.stringify(saved));const base=S.rounds.length;let extra=0;
+      for(let i=0;i<60;i++){
+        const g=meetGoal(S);
+        if(!g.missing&&(g.spread<=1||extra>=4))break;
+        if(!g.missing)extra++;
+        if(!generate(true))break;
+      }
+      const r={rounds:S.rounds.slice(base),start:S.sessionStart,goal:meetGoal(S)};
+      if(!res||score(r)<score(res))res=r;
+      if(!r.rounds.length)break;
+    }
+  }finally{S=saved}
+  if(!res.rounds.length){toast('จัดรอบไม่ได้ ตรวจสอบจำนวนผู้เล่นและสนาม');return null}
+  return res;
+}
 function standings(rounds,ids){
   const t={};
   const get=id=>t[id]||(t[id]={id,g:0,w:0,l:0,pf:0,pa:0});
@@ -1016,12 +1063,13 @@ function renderMatches(){
   }
   $('panel-matches').innerHTML=`
     <div class="row spread">
-      <button class="btn primary" data-act="next">จัดรอบที่ ${S.rounds.length+1}</button>
+      <div class="row"><button class="btn primary" data-act="next">จัดรอบที่ ${S.rounds.length+1}</button><button class="btn${armed==='auto'?' armed':''}" data-act="auto">${armed==='auto'&&autoPlan?`กดอีกครั้ง: เพิ่ม ${autoPlan.rounds.length} รอบให้พบกันหมด`:'จัดรอบอัตโนมัติให้พบกันหมด'}</button></div>
       <span class="hint">พร้อม ${ready} คน → ลง ${courts} สนาม · พัก ${pl.sitN} คน</span>
     </div>${mixNote}
     ${rounds.length?rounds.map(({r,i})=>`
       <div class="round">
-        <div class="rhead"><h3>รอบที่ ${i+1}</h3>${i===S.rounds.length-1?'<span class="now">รอบปัจจุบัน</span>':''}</div>
+        <div class="rhead"><h3>รอบที่ ${i+1}</h3>${i===S.rounds.length-1?'<span class="now">รอบปัจจุบัน</span>':''}
+          ${S.rounds.length>1?`<div class="rmove edit-only">${i>0?`<button class="btn small" data-act="rswap" data-i="${i}" data-d="-1" aria-label="สลับรอบที่ ${i+1} กับรอบที่ ${i}">⇅ สลับกับรอบ ${i}</button>`:''}${i<S.rounds.length-1?`<button class="btn small" data-act="rswap" data-i="${i}" data-d="1" aria-label="สลับรอบที่ ${i+1} กับรอบที่ ${i+2}">⇅ สลับกับรอบ ${i+2}</button>`:''}</div>`:''}</div>
         <div class="courts">${r.courts.map((c,ci)=>{
           const done=c.sa!=null&&c.sb!=null&&c.sa!==c.sb;
           return `<div class="court">
@@ -1036,7 +1084,7 @@ function renderMatches(){
               <span class="vs">แต้ม</span>
               <input class="score" type="number" inputmode="numeric" min="0" max="99" id="s-${r.id}-${ci}-b" data-act="score" data-r="${i}" data-c="${ci}" data-s="sb" value="${c.sb??''}" placeholder="–" aria-label="คะแนนฝั่งขวา สนาม ${ci+1}">
             </div></div>`}).join('')}</div>
-        ${r.sit.length?`<div class="sit"><span class="lbl">พักรอบนี้</span>${r.sit.map(id=>`<span class="chip">${esc(nm(id))}</span>`).join('')}</div>`:''}
+        ${r.sit.length?`<div class="sit"><span class="lbl">พักรอบนี้</span>${r.sit.map(id=>{const twice=i>0&&S.rounds[i-1].sit.includes(id);return `<span class="chip${twice?' twice':''}"${twice?' title="พักติดกัน 2 รอบ"':''}>${esc(nm(id))}${twice?' · พักติด':''}</span>`}).join('')}</div>`:''}
       </div>`).join(''):`<div class="empty">ยังไม่มีแมตช์ กด “จัดรอบที่ 1” เพื่อสุ่มคู่ลงสนาม</div>`}
     <footer>
       ${S.rounds.length?`<button class="btn small warn${armed==='undo'?' armed':''}" data-act="undo">${armed==='undo'?'กดอีกครั้งเพื่อลบรอบ '+S.rounds.length:'ลบรอบล่าสุด'}</button>`:''}
@@ -1553,6 +1601,17 @@ document.addEventListener('click',e=>{
     const fallback=()=>{box.value=txt;box.hidden=false;box.focus();box.select();toast('เลือกข้อความแล้ว กดคัดลอกได้เลย')};
     try{navigator.clipboard.writeText(txt).then(()=>{box.hidden=true;toast('คัดลอกสรุปแล้ว วางในแชทกลุ่มได้เลย')},fallback)}catch(err){fallback()}
     return;
+  }
+  else if(a==='auto'){
+    if(armed!=='auto'){toast('กำลังคำนวณรอบ…');setTimeout(()=>{const pl=planAuto();if(!pl)return;autoPlan=pl;arm('auto')},40);return}
+    arm('auto');if(!autoPlan)return;
+    S.rounds.push(...autoPlan.rounds);if(!S.sessionStart)S.sessionStart=autoPlan.start;
+    const g=autoPlan.goal,n=autoPlan.rounds.length;autoPlan=null;
+    toast(g.missing?`เพิ่ม ${n} รอบแล้ว ยังเหลือ ${g.missing} คู่ที่ยังไม่ได้เจอกัน`:`เพิ่ม ${n} รอบแล้ว ทุกคนได้พบกันครบ`);
+  }
+  else if(a==='rswap'){
+    const i=+b.dataset.i,j=i+ +b.dataset.d;if(j<0||j>=S.rounds.length)return;
+    [S.rounds[i],S.rounds[j]]=[S.rounds[j],S.rounds[i]];toast(`สลับรอบที่ ${i+1} กับรอบที่ ${j+1} แล้ว`);
   }
   else if(a==='openHist'){openHist=openHist===b.dataset.id?null:b.dataset.id;render();return}
   else if(a==='delHist'){if(!arm('dh'+b.dataset.id))return;S.archive=S.archive.filter(s=>s.id!==b.dataset.id);openHist=null;toast('ลบเซสชันแล้ว')}
