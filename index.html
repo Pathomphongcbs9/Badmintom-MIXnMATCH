@@ -46,7 +46,7 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.add input[type=text],.add select{font-size:16px}
+.add input[type=text],.add input[type=email],.add select{font-size:16px}
 
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
 .wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:18px 64px;display:grid;gap:18px}
@@ -93,7 +93,7 @@ h2{font-family:var(--f-display);font-size:20px;margin:0;text-wrap:balance}
 
 /* players */
 .add{display:flex;flex-wrap:wrap;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:12px}
-.add input[type=text]{flex:1 1 220px;min-width:0;border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:9px 12px}
+.add input[type=text],.add input[type=email]{flex:1 1 220px;min-width:0;border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:9px 12px}
 .add select{border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:9px 10px}
 .hint{color:var(--muted);font-size:13px;margin:0}
 .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
@@ -212,6 +212,32 @@ tr.top1 td.rank{color:var(--shuttle)}
 .drop:hover{border-color:var(--shuttle)}
 .hint.err{color:var(--danger)}
 label.btn{cursor:pointer;display:inline-block}
+/* online groups */
+.gbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:8px 12px}
+.gbar .gl{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;min-width:0}
+.gbar .gl b{font-family:var(--f-display);font-size:16px;overflow-wrap:anywhere}
+.gc{font-family:var(--f-num);font-size:12.5px;color:var(--muted);letter-spacing:.04em}
+.pill{border:0;border-radius:20px;padding:2px 10px;font-size:12px;background:var(--sunk);color:var(--muted)}
+.pill:empty{display:none}
+.pill[data-s=saved],.pill[data-s=view]{color:var(--ok)}
+.pill[data-s=error]{background:var(--danger);color:#fff}
+.pill[data-s=offline],.pill[data-s=stale]{color:var(--shuttle)}
+.home{display:grid;gap:14px}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;align-items:start}
+.glist{display:grid;gap:6px}
+.gitem{display:flex;gap:6px;align-items:center}
+.gopen{flex:1;min-width:0;text-align:left;border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:8px 12px;display:grid;gap:2px}
+.gopen:hover{border-color:var(--muted)}
+.gopen b{font-weight:600;overflow-wrap:anywhere}
+.gopen span{font-size:12px;color:var(--muted)}
+.loginbtns{display:grid;gap:8px}
+.linkbtn{border:0;background:none;color:var(--ink);text-decoration:underline;padding:0;font-size:inherit}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-basis:100%}
+.at-home .settings,.at-home #sampleBar,.at-home nav.tabs,.at-home section.panel{display:none!important}
+.ro .settings,.ro #addForm,.ro #panel-matches footer,.ro [data-act=next],.ro .x,.ro .costgrid,.ro #panel-cost .seg,.ro .paycard .fields,.ro [data-act=delHist],.ro .drop,.ro label[for=qrFile],.ro [data-act=qrRemove],.ro #panel-players > .hint{display:none!important}
+.ro .tog,.ro .gbtn,.ro .pl select{pointer-events:none}
+.ro .score:disabled{opacity:1;color:var(--court-ink);-webkit-text-fill-color:var(--court-ink);background:rgba(255,255,255,.08)}
+.ro .pl select:disabled{opacity:1;color:var(--ink);-webkit-text-fill-color:var(--ink)}
 /* rules */
 .rules{display:grid;gap:14px}
 .rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px 20px}
@@ -278,9 +304,11 @@ footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
         <div class="seg" id="balSeg"><button data-act="bal" data-v="1">ถัวฝีมือ</button><button data-act="bal" data-v="0">สุ่มล้วน</button></div>
       </div>
     </div>
+    <div class="gbar" id="gbar" hidden></div>
   </header>
 
   <div id="sampleBar"></div>
+  <section class="home" id="home" hidden></section>
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-act="tab" data-v="players" id="tab-players">ผู้เล่น<span class="count" id="pCount"></span></button>
@@ -349,7 +377,8 @@ footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
         <ul>
           <li>กด “จบการแข่งขันและบันทึกประวัติ” เพื่อเก็บแมตช์ อันดับ และค่าใช้จ่ายของเซสชันนั้น</li>
           <li>รายชื่อผู้เล่นและราคาสนามกับราคาลูกยังเก็บไว้ใช้ครั้งต่อไป ส่วนรายการค่าใช้จ่ายอื่น ๆ จะถูกล้าง</li>
-          <li>ข้อมูลทั้งหมดเก็บอยู่ในเครื่องที่ใช้งานเท่านั้น</li>
+          <li>โหมด “ใช้ในเครื่องนี้” เก็บข้อมูลไว้ในเครื่องเท่านั้น</li>
+          <li>ก๊วนออนไลน์เก็บข้อมูลบนเซิร์ฟเวอร์ ผู้จัดเท่านั้นที่แก้ไขได้ ส่วนทุกคนที่มีลิงก์หรือรหัสก๊วนดูได้ทั้งคู่ คะแนน ยอดเงิน และช่องทางชำระเงิน</li>
         </ul>
       </div>
     </div>
@@ -357,11 +386,13 @@ footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 </div>
 <div class="toast" id="toast" hidden></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))}</script>
 
 <script>
 (function(){
-const KEY='badmix-v1';
+let KEY='badmix-v1';
 const LV={1:'มือใหม่',2:'เริ่มเล่น',3:'กลาง',4:'ดี',5:'เก่ง'};
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -370,7 +401,7 @@ const pk=(a,b)=>a<b?a+'|'+b:b+'|'+a;
 
 let S=null, armed=null, armTimer=null, addG='m', openHist=null;
 const Pref=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Preferences;
-function save(){const v=JSON.stringify(S);try{localStorage.setItem(KEY,v)}catch(e){}if(Pref){try{Pref.set({key:KEY,value:v})}catch(e){}}}
+function save(){if(typeof APPMODE!=='undefined'&&(APPMODE==='viewer'||APPMODE==='home'))return;const v=JSON.stringify(S);try{localStorage.setItem(KEY,v)}catch(e){}if(Pref){try{Pref.set({key:KEY,value:v})}catch(e){}}if(typeof queueCloud==='function')queueCloud();}
 function load(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null}catch(e){return null}}
 
 function seed(){
@@ -504,6 +535,8 @@ function standings(rounds,ids){
 /* ---------- render ---------- */
 const $=id=>document.getElementById(id);
 function render(){
+  if(APPMODE==='home'){renderHome();return}
+  if(!S)return;
   $('cOut').textContent=S.settings.courts;
   [...$('modeSeg').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.settings.mode));
   [...$('balSeg').children].forEach(b=>b.setAttribute('aria-pressed',(b.dataset.v==='1')===S.settings.balance));
@@ -512,11 +545,12 @@ function render(){
   const live=S.players.filter(p=>!p.removed);
   $('pCount').textContent=live.length;
   $('rCount').textContent=S.rounds.length||'';
-  $('sampleBar').innerHTML=S.sample?`<div class="sample"><span><b>ข้อมูลตัวอย่าง</b> รายชื่อและคะแนนชุดนี้ใช้สาธิตการทำงาน ล้างแล้วใส่รายชื่อก๊วนของคุณได้เลย</span><button class="btn small" data-act="clearSample">ล้างตัวอย่าง</button></div>`:'';
+  $('sampleBar').innerHTML=S.sample&&APPMODE==='local'?`<div class="sample"><span><b>ข้อมูลตัวอย่าง</b> รายชื่อและคะแนนชุดนี้ใช้สาธิตการทำงาน ล้างแล้วใส่รายชื่อก๊วนของคุณได้เลย</span><button class="btn small" data-act="clearSample">ล้างตัวอย่าง</button></div>`:'';
   renderPlayers();renderMatches();renderStandings();renderHistory();renderCost();
+  afterRender();
 }
 
-const MODE={doubles:'คู่',mixed:'คู่ผสม',singles:'เดี่ยว'};
+const MODE_LABEL={doubles:'คู่',mixed:'คู่ผสม',singles:'เดี่ยว'};
 const fmtDate=t=>new Date(t).toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 const fmtTime=t=>new Date(t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 const isDone=c=>c.sa!=null&&c.sb!=null&&c.sa!==c.sb;
@@ -543,7 +577,7 @@ function sessionCard(s){
   const nh=id=>`<span class="gdot ${s.names[id]&&s.names[id].g||''}"></span>${esc(n(id))}`;
   const games=s.rounds.reduce((a,r)=>a+r.courts.filter(isDone).length,0);
   const st=standings(s.rounds,[]);
-  const modes=[...new Set(s.rounds.map(r=>MODE[r.mode]).filter(Boolean))].join(' / ');
+  const modes=[...new Set(s.rounds.map(r=>MODE_LABEL[r.mode]).filter(Boolean))].join(' / ');
   const open=openHist===s.id;
   const top=st[0]&&st[0].g?n(st[0].id):null;
   return `<article class="hcard${open?' open':''}">
@@ -555,7 +589,7 @@ function sessionCard(s){
     ${open?`<div class="hbody">${s.cost?histCost(s.cost):''}
       ${st.length?tableHtml(st,n):'<p class="hint">เซสชันนี้ไม่ได้บันทึกคะแนน</p>'}
       <div class="hrounds">${s.rounds.map((r,i)=>`
-        <div class="hround"><div class="lbl">รอบที่ ${i+1}${r.mode?' · '+MODE[r.mode]:''}</div>
+        <div class="hround"><div class="lbl">รอบที่ ${i+1}${r.mode?' · '+MODE_LABEL[r.mode]:''}</div>
           ${r.courts.map((c,ci)=>{const d=isDone(c);return `<div class="hmatch">
             <span class="ct">สนาม ${ci+1}</span>
             <span class="tm${d&&c.sa>c.sb?' w':''}">${c.a.map(nh).join(' · ')}</span>
@@ -831,10 +865,22 @@ function arm(key){
   armed=key;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed=null;render()},3500);render();return false;
 }
 
+function updateCourtCard(el,c){
+  const card=el.closest('.court');if(!card)return;
+  const d=c.sa!=null&&c.sb!=null&&c.sa!==c.sb, w=d?(c.sa>c.sb?'a':'b'):'';
+  const tag=card.querySelector('.ch span');if(tag)tag.textContent=d?'จบเกม':'ใส่คะแนน';
+  card.querySelector('.half.a').classList.toggle('win',w==='a');
+  card.querySelector('.half.b').classList.toggle('win',w==='b');
+  const sv=card.querySelector('.csvg');if(sv)sv.outerHTML=courtSVG(w);
+}
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.tagName==='SELECT'||b.tagName==='INPUT')return;
   const a=b.dataset.act;
+  if(CLOUD_ACTS.has(a)){cloudClick(a,b);return}
+  if(!S)return;
+  if(APPMODE==='viewer'&&!['tab','openHist','copyCost','copyAcct'].includes(a))return;
+  if(APPMODE==='viewer'&&a==='tab'){S.tab=b.dataset.v;render();return}
   if(a==='tab'){S.tab=b.dataset.v}
   else if(a==='courts'){S.settings.courts=Math.max(1,Math.min(20,S.settings.courts+ +b.dataset.d))}
   else if(a==='mode'){S.settings.mode=b.dataset.v}
@@ -870,6 +916,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
   const el=e.target;
+  if(!S||APPMODE==='viewer'||APPMODE==='home')return;
   if(el.id==='qrFile'&&el.files&&el.files[0]){
     const file=el.files[0];
     if(!/^image\//.test(file.type)){toast('เลือกไฟล์รูปภาพเท่านั้น');return}
@@ -887,17 +934,18 @@ document.addEventListener('change',e=>{
   if(el.dataset.act==='score'){
     const c=S.rounds[+el.dataset.r].courts[+el.dataset.c];
     const v=el.value.trim();c[el.dataset.s]=v===''?null:Math.max(0,Math.min(99,parseInt(v,10)||0));
-    save();renderMatches();renderStandings();renderCost();
+    save();updateCourtCard(el,c);renderStandings();renderCost();
   }
 });
 document.addEventListener('input',e=>{
   const el=e.target,k=el.dataset.k;
+  if(!S||APPMODE==='viewer'||APPMODE==='home')return;
   if(el.dataset.act==='cost'){S.cost[k]=el.value===''?'':+el.value;save();updateCostLive()}
   else if(el.dataset.act==='pay'){S.pay[k]=el.value;save();const pv=$('payPreview');if(pv)pv.innerHTML=payPreview(costCalc())}
   else if(el.dataset.act==='extra'){const x=S.cost.extras.find(x=>x.id===el.dataset.id);if(!x)return;x[k]=k==='amount'?(el.value===''?'':+el.value):el.value;save();updateCostLive()}
 });
 document.addEventListener('submit',e=>{
-  if(e.target.id!=='addForm')return;e.preventDefault();
+  if(e.target.id!=='addForm'||!S||APPMODE==='viewer')return;e.preventDefault();
   const names=$('addName').value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
   if(!names.length){toast('พิมพ์ชื่อผู้เล่นก่อนกดเพิ่ม');return}
   const lv=+$('addLevel').value; addG=$('addGender').value;
@@ -905,14 +953,224 @@ document.addEventListener('submit',e=>{
   save();render();toast(`เพิ่ม ${names.length} คนแล้ว`);$('addName').focus();
 });
 
+/* ---------- cloud: online groups (Supabase) ---------- */
+const CFG=window.MIX_CONFIG||{};
+const sb=(CFG.supabaseUrl&&CFG.supabaseAnonKey&&window.supabase&&window.supabase.createClient)
+  ?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
+let APPMODE='local', GROUP=null, USER=null, chan=null, dirty=false, saveT=null, syncState='', editSeq=0;
+const CODE_ABC='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const newCode=()=>Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>CODE_ABC[x%CODE_ABC.length]).join('');
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const setLast=v=>lsSet('mix-last',v);
+const here=()=>location.origin+location.pathname;
+const shareUrl=code=>here()+'?g='+code;
+function emptyState(){return {players:[],settings:{courts:2,mode:'doubles',balance:true},rounds:[],archive:[],tab:'players',sample:false}}
+function normalize(){
+  if(!S.players)S.players=[]; if(!S.rounds)S.rounds=[]; if(!S.archive)S.archive=[];
+  if(!S.settings)S.settings={courts:2,mode:'doubles',balance:true};
+  if(!S.cost)S.cost=costDefault(); if(!S.pay)S.pay=payDefault(); if(!S.tab)S.tab='matches';
+}
+const hasLocal=()=>{try{const s=JSON.parse(lsGet('badmix-v1')||'null');return !!(s&&s.players&&s.players.length&&!s.sample)}catch(e){return false}};
+
+function setSync(s){
+  syncState=s;const el=$('syncPill');if(!el)return;
+  const m={saved:'บันทึกออนไลน์แล้ว',saving:'กำลังบันทึก…',offline:'ออฟไลน์ · จะบันทึกเมื่อมีเน็ต',error:'บันทึกไม่สำเร็จ · แตะเพื่อลองใหม่',view:'ดูอย่างเดียว · อัปเดตอัตโนมัติ',stale:'ออฟไลน์ · แสดงข้อมูลล่าสุด'};
+  el.textContent=m[s]||'';el.dataset.s=s;
+}
+function renderGbar(){
+  const g=$('gbar');
+  if(APPMODE==='local'){g.hidden=!sb;g.innerHTML=sb?`<div class="gl"><b>ใช้ในเครื่องนี้</b><span class="gc">ออฟไลน์ · คนอื่นดูไม่ได้</span></div><button class="btn small" data-act="home">ก๊วนออนไลน์</button>`:'';return}
+  g.hidden=false;
+  g.innerHTML=`<div class="gl"><b>${esc(GROUP.name||'ก๊วน')}</b><span class="gc">รหัส ${GROUP.code}</span><button class="pill" id="syncPill" data-act="retrySync"></button></div>
+    <div class="row"><button class="btn small" data-act="share">แชร์ลิงก์ให้ก๊วน</button><button class="btn small" data-act="home">เปลี่ยนก๊วน</button></div>`;
+  setSync(syncState);
+}
+function showApp(){document.body.classList.remove('at-home');$('home').hidden=true;renderGbar()}
+function showHome(msg){APPMODE='home';document.body.classList.add('at-home');$('home').hidden=false;$('gbar').hidden=true;renderHome(msg)}
+function afterRender(){if(APPMODE==='viewer')document.querySelectorAll('section.panel input, section.panel select').forEach(el=>{el.disabled=true})}
+
+/* admin: the organizer edits, every change is saved online */
+function queueCloud(){
+  if(APPMODE!=='admin')return;
+  dirty=true;editSeq++;lsSet(KEY+'-pending','1');
+  setSync(navigator.onLine?'saving':'offline');
+  clearTimeout(saveT);saveT=setTimeout(pushCloud,700);
+}
+async function pushCloud(){
+  if(APPMODE!=='admin'||!dirty)return;
+  if(!navigator.onLine){setSync('offline');return}
+  const seq=editSeq;
+  try{
+    const {error}=await sb.from('groups').update({state:S}).eq('id',GROUP.id);
+    if(error)throw error;
+  }catch(e){setSync(navigator.onLine?'error':'offline');return}
+  if(seq!==editSeq){pushCloud();return}
+  dirty=false;lsDel(KEY+'-pending');setSync('saved');
+  if(chan)chan.send({type:'broadcast',event:'update',payload:{at:Date.now()}});
+}
+window.addEventListener('online',()=>{if(APPMODE==='admin'&&dirty)pushCloud();if(APPMODE==='viewer')fetchView()});
+window.addEventListener('offline',()=>{if(APPMODE==='admin'&&dirty)setSync('offline');if(APPMODE==='viewer')setSync('stale')});
+
+function connect(){
+  if(!sb||!GROUP||chan)return;
+  chan=sb.channel('mix-'+GROUP.code,{config:{broadcast:{self:false}}});
+  chan.on('broadcast',{event:'update'},()=>{if(APPMODE==='viewer')fetchView();else if(APPMODE==='admin'&&!dirty)refreshAdmin()}).subscribe();
+}
+async function refreshAdmin(){
+  try{
+    const {data}=await sb.from('groups').select('state').eq('id',GROUP.id).single();
+    if(data&&data.state&&!dirty){const t=S.tab;S=data.state;S.tab=t;normalize();lsSet(KEY,JSON.stringify(S));render()}
+  }catch(e){}
+}
+function openAdmin(row){
+  APPMODE='admin';GROUP={id:row.id,code:row.code,name:row.name};KEY='badmix-g-'+row.code;
+  lsSet('badmix-gmeta-'+row.code,JSON.stringify(GROUP));
+  let cache=null;try{cache=JSON.parse(lsGet(KEY)||'null')}catch(e){}
+  const pending=lsGet(KEY+'-pending')==='1';
+  S=(pending&&cache)?cache:(row.state&&row.state.players?row.state:(cache||emptyState()));
+  normalize();setLast(row.code);document.title=GROUP.name+' · Mix&Match';
+  showApp();render();connect();
+  if(pending){dirty=true;setSync('saving');pushCloud()}else setSync('saved');
+}
+
+/* viewer: anyone with the link or code sees the group live, read-only */
+async function fetchView(code){
+  code=code||(GROUP&&GROUP.code);if(!code)return false;
+  try{
+    const {data,error}=await sb.rpc('get_group',{p_code:code});
+    if(error||!data||!data.length){if(GROUP)setSync('stale');return false}
+    const row=data[0], t=S&&S.tab;
+    GROUP={code,name:row.name};S=row.state&&row.state.players?row.state:emptyState();S.tab=t||'matches';normalize();
+    lsSet(KEY,JSON.stringify({name:row.name,state:S}));
+    document.title=row.name+' · Mix&Match';
+    showApp();render();setSync('view');return true;
+  }catch(e){if(GROUP)setSync('stale');return false}
+}
+async function openViewer(code){
+  APPMODE='viewer';KEY='badmix-v-'+code;document.body.classList.add('ro');
+  let cache=null;try{cache=JSON.parse(lsGet(KEY)||'null')}catch(e){}
+  if(cache&&cache.state){GROUP={code,name:cache.name};S=cache.state;S.tab='matches';normalize();showApp();render();setSync('stale')}
+  const ok=await fetchView(code);
+  if(!ok&&!cache){document.body.classList.remove('ro');showHome(`ไม่พบก๊วนรหัส ${code} ตรวจสอบรหัสหรืออินเทอร์เน็ตแล้วลองใหม่`);return}
+  connect();
+  setInterval(()=>{if(document.visibilityState==='visible')fetchView()},20000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')fetchView()});
+}
+
+/* home: join a group, sign in as organizer, or use offline on this device */
+async function renderHome(msg){
+  const h=$('home');
+  let groups='';
+  if(USER){
+    try{
+      const {data,error}=await sb.from('groups').select('id,code,name,updated_at').order('updated_at',{ascending:false});
+      if(error)throw error;
+      groups=data.length?`<div class="glist">${data.map(g=>`<div class="gitem">
+          <button class="gopen" data-act="openGroup" data-code="${g.code}"><b>${esc(g.name)}</b><span>รหัส ${g.code} · แก้ล่าสุด ${fmtDate(new Date(g.updated_at).getTime())}</span></button>
+          <button class="x${armed==='dg'+g.id?' armed':''}" data-act="delGroup" data-id="${g.id}" aria-label="ลบก๊วน ${esc(g.name)}" title="${armed==='dg'+g.id?'กดอีกครั้งเพื่อลบก๊วนนี้ถาวร':'ลบก๊วน'}">×</button></div>`).join('')}</div>`
+        :'<p class="hint">ยังไม่มีก๊วน สร้างก๊วนแรกด้านล่าง</p>';
+    }catch(e){groups='<p class="hint err">โหลดรายชื่อก๊วนไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่</p>'}
+  }
+  const md=USER&&USER.user_metadata||{};
+  const who=USER?(md.full_name||md.name||USER.email||'ผู้จัด'):'';
+  h.innerHTML=`${msg?`<div class="sample">${esc(msg)}</div>`:''}
+    <div class="hgrid">
+      <div class="ccard"><div class="ch3">เข้าดูก๊วน</div>
+        <p class="hint">ใส่รหัสก๊วนที่ผู้จัดส่งให้ หรือกดลิงก์ที่ผู้จัดแชร์ในกลุ่ม</p>
+        <form id="joinForm" class="add"><input type="text" id="joinCode" placeholder="รหัส 8 ตัว" autocomplete="off" autocapitalize="characters" maxlength="12" aria-label="รหัสก๊วน"><button class="btn primary" type="submit">เข้าดู</button></form>
+      </div>
+      <div class="ccard"><div class="ch3">ผู้จัดก๊วน</div>
+        ${USER?`<p class="hint">เข้าสู่ระบบเป็น <b>${esc(who)}</b> · <button class="linkbtn" data-act="logout">ออกจากระบบ</button></p>
+          ${groups}
+          <form id="createForm" class="add"><input type="text" id="newName" placeholder="ชื่อก๊วนใหม่ เช่น ก๊วนแบดพุธเย็น" maxlength="40" aria-label="ชื่อก๊วนใหม่"><button class="btn primary" type="submit">สร้างก๊วน</button>
+          ${hasLocal()?'<label class="chk"><input type="checkbox" id="importLocal" checked> นำรายชื่อผู้เล่นและการตั้งค่าในเครื่องนี้มาด้วย</label>':''}</form>`
+        :`<p class="hint">เข้าสู่ระบบเพื่อสร้างก๊วน จัดคู่ และให้ทุกคนในก๊วนดูผลแบบเรียลไทม์</p>
+          <div class="loginbtns"><button class="btn" data-act="login" data-p="google">เข้าสู่ระบบด้วย Google</button>${CFG.lineProvider?`<button class="btn" data-act="login" data-p="${esc(CFG.lineProvider)}">เข้าสู่ระบบด้วย LINE</button>`:''}</div>
+          <form id="emailForm" class="add"><input type="email" id="loginEmail" placeholder="หรือรับลิงก์เข้าสู่ระบบทางอีเมล" autocomplete="email" aria-label="อีเมล"><button class="btn" type="submit">ส่งลิงก์</button></form>`}
+      </div>
+      <div class="ccard"><div class="ch3">ใช้ในเครื่องนี้</div>
+        <p class="hint">ไม่ต้องเข้าสู่ระบบ ข้อมูลอยู่ในเครื่องนี้เท่านั้น คนอื่นดูไม่ได้</p>
+        <button class="btn" data-act="goLocal">ใช้แบบออฟไลน์</button>
+      </div>
+    </div>`;
+}
+
+const CLOUD_ACTS=new Set(['share','home','goLocal','login','logout','openGroup','delGroup','retrySync']);
+async function cloudClick(a,b){
+  if(a==='home'){setLast('');location.href=here()+'?home=1'}
+  else if(a==='goLocal'){setLast('local');location.href=here()}
+  else if(a==='openGroup'){location.href=here()+'?g='+b.dataset.code}
+  else if(a==='login'){
+    const {error}=await sb.auth.signInWithOAuth({provider:b.dataset.p,options:{redirectTo:here()+'?home=1'}});
+    if(error)toast('เข้าสู่ระบบไม่สำเร็จ: '+error.message);
+  }
+  else if(a==='logout'){try{await sb.auth.signOut()}catch(e){}USER=null;renderHome()}
+  else if(a==='delGroup'){
+    if(!arm('dg'+b.dataset.id))return;
+    const {error}=await sb.from('groups').delete().eq('id',b.dataset.id);
+    toast(error?'ลบไม่สำเร็จ ลองใหม่อีกครั้ง':'ลบก๊วนแล้ว');renderHome();
+  }
+  else if(a==='retrySync'){if(APPMODE==='admin'){dirty=true;pushCloud()}else if(APPMODE==='viewer')fetchView()}
+  else if(a==='share'){
+    const url=shareUrl(GROUP.code);
+    if(navigator.share){try{await navigator.share({title:'Badminton Mix&Match',text:`ดูคู่ คะแนน และยอดเงินของ ${GROUP.name}`,url});return}catch(e){if(e&&e.name==='AbortError')return}}
+    try{await navigator.clipboard.writeText(url);toast('คัดลอกลิงก์แล้ว ส่งในกลุ่มได้เลย')}catch(e){toast(url)}
+  }
+}
+document.addEventListener('submit',async e=>{
+  const id=e.target.id;if(!['joinForm','createForm','emailForm'].includes(id))return;e.preventDefault();
+  if(id==='joinForm'){
+    const c=$('joinCode').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(c.length<4){toast('ใส่รหัสก๊วนให้ครบ');return}
+    location.href=here()+'?g='+c;
+  }else if(id==='emailForm'){
+    const em=$('loginEmail').value.trim();if(!em){toast('ใส่อีเมลก่อน');return}
+    const {error}=await sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:here()+'?home=1'}});
+    toast(error?'ส่งไม่สำเร็จ: '+error.message:'ส่งลิงก์ไปที่อีเมลแล้ว เปิดอีเมลแล้วกดลิงก์บนเครื่องนี้');
+  }else if(id==='createForm'){
+    const name=$('newName').value.trim();if(!name){toast('ตั้งชื่อก๊วนก่อน');return}
+    S=emptyState();normalize();
+    const imp=$('importLocal');
+    if(imp&&imp.checked){try{const l=JSON.parse(lsGet('badmix-v1'));
+      S.players=l.players.filter(p=>!p.removed).map(p=>({...p}));if(l.settings)S.settings={...l.settings};
+      if(l.cost)S.cost={...l.cost,extras:[],exclude:[]};if(l.pay)S.pay={...l.pay};}catch(err){}}
+    for(let i=0;i<5;i++){
+      const {data,error}=await sb.from('groups').insert({code:newCode(),name,state:S}).select('code').single();
+      if(!error){location.href=here()+'?g='+data.code;return}
+      if(error.code!=='23505'){toast('สร้างก๊วนไม่สำเร็จ: '+error.message);return}
+    }
+    toast('สร้างก๊วนไม่สำเร็จ ลองใหม่อีกครั้ง');
+  }
+});
+
+function bootLocal(){APPMODE='local';KEY='badmix-v1';S=load();if(!S||!S.players)seed();normalize();if(sb)setLast('local');showApp();render()}
+
 (async function boot(){
-  if(Pref){try{const r=await Pref.get({key:KEY});if(r&&r.value)S=JSON.parse(r.value)}catch(e){}}
-  if(!S)S=load();
-  if(!S||!S.players)seed();
-  if(!S.archive)S.archive=[];
-  if(!S.cost)S.cost=costDefault();
-  if(!S.pay)S.pay=payDefault();
-  render();
+  const qs=new URLSearchParams(location.search);
+  const code=(qs.get('g')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!sb){bootLocal();return}
+  try{const {data}=await sb.auth.getSession();USER=data&&data.session?data.session.user:null}catch(e){}
+  sb.auth.onAuthStateChange((ev,session)=>{USER=session?session.user:null;if(APPMODE==='home')renderHome()});
+  if(code){
+    if(USER){
+      try{
+        const {data,error}=await sb.from('groups').select('*').eq('code',code).maybeSingle();
+        if(error)throw error;
+        if(data){openAdmin(data);return}
+      }catch(e){
+        let meta=null;try{meta=JSON.parse(lsGet('badmix-gmeta-'+code)||'null')}catch(err){}
+        if(meta){openAdmin({...meta,state:null});return}
+      }
+    }
+    openViewer(code);return;
+  }
+  if(qs.has('home')){showHome();return}
+  const last=lsGet('mix-last');
+  if(last==='local'){bootLocal();return}
+  if(last){location.replace(here()+'?g='+last);return}
+  showHome();
 })();
 })();
 </script>

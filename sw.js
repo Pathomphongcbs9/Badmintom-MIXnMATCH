@@ -1,7 +1,8 @@
-// Offline support: the app page and its fonts / QR library are cached after the first visit.
-// Bump VERSION whenever you deploy changes so phones pick up the new version.
-const VERSION = 'mixmatch-v1';
-const CORE = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/apple-touch-icon.png'];
+// Offline support. Bump VERSION whenever you deploy changes so phones pick up the new version.
+const VERSION = 'mixmatch-v2';
+const CORE = ['/', '/index.html', '/config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/apple-touch-icon.png'];
+// Only these outside files are cached (fonts and libraries). Supabase data is never cached here.
+const CDN = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -15,27 +16,33 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+const put = (req, res) => caches.open(VERSION).then((c) => c.put(req, res));
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  const url = new URL(req.url);
 
-  // The app page: try the network first so updates arrive, fall back to the cached copy offline.
-  if (req.mode === 'navigate') {
+  // Our own files: network first so updates arrive, cached copy when offline.
+  if (url.origin === self.location.origin) {
     e.respondWith(
       fetch(req)
-        .then((res) => { caches.open(VERSION).then((c) => c.put('/index.html', res.clone())); return res; })
-        .catch(() => caches.match('/index.html'))
+        .then((res) => { if (res.ok) put(req.mode === 'navigate' ? '/index.html' : req, res.clone()); return res; })
+        .catch(() => caches.match(req.mode === 'navigate' ? '/index.html' : req, { ignoreSearch: true }))
     );
     return;
   }
 
-  // Everything else (icons, Google Fonts, QR library): cached copy first, refreshed in the background.
-  e.respondWith(
-    caches.match(req).then((hit) => {
-      const net = fetch(req)
-        .then((res) => { if (res && (res.ok || res.type === 'opaque')) caches.open(VERSION).then((c) => c.put(req, res.clone())); return res; })
-        .catch(() => hit);
-      return hit || net;
-    })
-  );
+  // Fonts and libraries: cached copy first, refreshed in the background.
+  if (CDN.includes(url.hostname)) {
+    e.respondWith(
+      caches.match(req).then((hit) => {
+        const net = fetch(req)
+          .then((res) => { if (res && (res.ok || res.type === 'opaque')) put(req, res.clone()); return res; })
+          .catch(() => hit);
+        return hit || net;
+      })
+    );
+  }
+  // Everything else (Supabase API, sign-in) goes straight to the network.
 });
