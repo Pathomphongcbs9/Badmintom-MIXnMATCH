@@ -338,6 +338,26 @@ section.panel>*,.tgroup>*,.hbody>*{min-width:0}
 .donate-by{font-weight:600;color:var(--muted)}
 .donate-qr{flex:none;width:96px;height:auto;background:#fff;border-radius:6px;padding:3px;border:1px solid var(--rule)}
 .donate-warn{font-weight:600;color:var(--danger)!important}
+a.btn{text-decoration:none;color:var(--ink);display:inline-block}
+.bhead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.imgmodal{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:50;display:grid;place-items:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.imgbox{background:var(--surface);color:var(--ink);border-radius:14px;padding:14px;width:min(100%,960px);max-height:100%;display:grid;gap:10px;grid-template-rows:auto minmax(0,1fr) auto auto;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.imgscroll{overflow:auto;border-radius:8px;background:#164f37;min-height:120px;-webkit-overflow-scrolling:touch}
+.imgscroll img{display:block;width:100%;height:auto;max-width:none;-webkit-touch-callout:default}
+.sharehead{font-weight:600;font-size:14px;margin-top:4px}
+table.share{min-width:0;width:100%}
+.share th:first-child,.share td:first-child{text-align:left}
+.share th:nth-child(2),.share td:nth-child(2){text-align:right}
+.share td small{display:block;color:var(--muted);font-size:11px}
+.share th,.share td{padding:7px 6px;font-size:13px}
+.share th{font-size:11px;line-height:1.3}
+.share td:first-child{white-space:nowrap}
+.share td b{white-space:nowrap}
+.share.alloc td,.share.alloc th{text-align:center}
+.share.alloc td:first-child,.share.alloc th:first-child{text-align:left}
+.hin{width:64px;border:1px solid var(--rule);background:var(--bg);border-radius:6px;padding:5px 6px;font-size:16px;font-family:var(--f-num);text-align:center;color:var(--ink)}
+.share input[type=checkbox]{width:20px;height:20px;accent-color:var(--court)}
+.allocard{grid-column:1/-1}
 /* rules */
 .rules{display:grid;gap:14px}
 .rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px 20px}
@@ -432,7 +452,7 @@ footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
       <div class="rule">
         <h3>การจัดคู่</h3>
         <ul>
-          <li>คนที่เล่นมากที่สุดได้พักก่อน และคนที่เพิ่งพักรอบที่แล้วได้ลงสนามรอบถัดไป</li>
+          <li>คนที่เล่นน้อยกว่าได้ลงสนามก่อนเสมอ ถ้าคนน้อย บางคนอาจได้เล่นหรือพักติดกัน 2 รอบ เพื่อให้ได้เจอคู่แข่งครบทุกคน แต่เฉลี่ยแล้วทุกคนได้เล่นจำนวนเกมใกล้เคียงกัน</li>
           <li>ระบบเลี่ยงการจับคู่กับคนเดิมซ้ำ และเลี่ยงการเจอคู่แข่งหน้าเดิมบ่อย ๆ</li>
           <li>โหมด “ถัวฝีมือ” รวมเลเวล (1–5) ของสองฝั่งให้ใกล้เคียงกัน ส่วน “สุ่มล้วน” ไม่ดูเลเวล</li>
           <li>ผู้เล่นที่ปิดสวิตช์ “พร้อมเล่น” จะไม่ถูกจัดลงสนาม</li>
@@ -442,6 +462,7 @@ footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
         <h3>คู่ผสม</h3>
         <ul>
           <li>ทุกทีมต้องมีชาย 1 คน และหญิง 1 คน</li>
+          <li>ผู้ชายในสนามเดียวกันจะเป็นคู่แข่งกันโดยตรง (ผู้หญิงก็เช่นกัน) ระบบจะหมุนให้ผู้ชายได้เจอผู้ชายทุกคน และผู้หญิงได้เจอผู้หญิงทุกคนวนกันไป ก่อนจะกลับมาเจอคนเดิมซ้ำ และพยายามไม่ให้เจอคู่แข่งคนเดิมสองรอบติด</li>
           <li>หมุนคนพักแยกกันในฝั่งชายและฝั่งหญิง ฝั่งที่คนเยอะกว่าจะได้พักบ่อยกว่า</li>
           <li>จำนวนสนามที่เปิดได้ขึ้นกับเพศที่มีคนน้อยกว่า</li>
           <li>ผู้เล่นที่ยังไม่ระบุเพศจะไม่ถูกจัดลงสนาม</li>
@@ -462,6 +483,7 @@ footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
           <li>ค่าลูกแบด = จำนวนลูกที่ใช้ × ราคาต่อลูก รวมกับรายการอื่น ๆ ที่เพิ่มเอง</li>
           <li>หารเท่ากันกับทุกคนในเซสชัน ทั้งคนที่ได้ลงเล่นและคนที่พัก ถ้ายังไม่เริ่มเซสชันจะหารกับผู้เล่นที่พร้อมเล่น</li>
           <li>แตะชื่อในการ์ดผู้ร่วมหารเพื่อไม่นับคนนั้น</li>
+          <li>โหมด “กำหนดรายคน”: ค่าสนามหารตามสัดส่วนชั่วโมงที่แต่ละคนใช้ เช่น A อยู่ 1 จาก 2 ชม. จะจ่ายครึ่งหนึ่งของคนที่อยู่ครบ ส่วนค่าลูกและรายการอื่นหารเฉพาะคนที่ติ๊กไว้ แล้วแสดงตารางว่าใครจ่ายเท่าไร</li>
           <li>ปัดเศษขึ้นได้เป็น 1, 5 หรือ 10 บาท ส่วนที่เกินจะแสดงไว้ในใบสรุป</li>
           <li>ช่องทางชำระเงินเลือกได้ทั้งบัญชีธนาคาร พร้อมเพย์ (สร้าง QR ใส่ยอดคนละให้อัตโนมัติ) หรืออัปโหลดรูป QR Code ของคุณเอง</li>
         </ul>
@@ -582,32 +604,47 @@ function generate(silent){
   const h=history();
   const last=S.rounds[S.rounds.length-1];
   const lastSit=new Set(last?last.sit:[]);
+  const lastOpp=new Set();if(last)last.courts.forEach(c=>c.a.forEach(x=>c.b.forEach(y=>lastOpp.add(pk(x,y)))));
   const rank=list=>shuffle(list).sort((x,y)=>
     (h.played[x.id]||0)-(h.played[y.id]||0) ||
     (lastSit.has(y.id)-lastSit.has(x.id)) ||
     (h.sat[y.id]||0)-(h.sat[x.id]||0));
-  let playing,sit,pm=[],pf=[];
+  // who plays: everyone who has played fewer games is certain; among players tied at the cut-off,
+  // the search below picks whichever subset gives the freshest partners and opponents
+  const pool=(ranked,k)=>{
+    if(k>=ranked.length)return {sure:ranked.map(p=>p.id),tie:[],need:0};
+    const pc=p=>h.played[p.id]||0,th=pc(ranked[k-1]);
+    let sure=ranked.filter(p=>pc(p)<th).map(p=>p.id),tie=ranked.filter(p=>pc(p)===th);
+    // players one game ahead may play again when it gives fresher opponents (small cost) - keeps games even on average
+    const extra=ranked.filter(p=>pc(p)===th+1).map(p=>p.id);
+    return {sure,tie:tie.map(p=>p.id),extra,need:k-sure.length};
+  };
+  const pick=pl=>pl.sure.concat(shuffle(Math.random()<.5?pl.tie:pl.tie.concat(pl.extra||[])).slice(0,pl.need));
+  const aheadPen=(pl,ch)=>(pl.extra||[]).filter(id=>ch.includes(id)).length*35;
+  // sitting out twice in a row costs something, but less than facing the same opponent again
+  const sitPen=(pl,ch)=>pl.tie.filter(id=>lastSit.has(id)&&!ch.includes(id)).length*25;
+  let playing,sit,pm=[],pf=[],poolM,poolF,poolA;
   if(mode==='mixed'){
-    const rm=rank(act.filter(p=>p.g==='m')), rf=rank(act.filter(p=>p.g==='f'));
-    pm=rm.slice(0,courts*2).map(p=>p.id); pf=rf.slice(0,courts*2).map(p=>p.id);
-    sit=[...rm.slice(courts*2),...rf.slice(courts*2),...act.filter(p=>p.g!=='m'&&p.g!=='f')];
+    poolM=pool(rank(act.filter(p=>p.g==='m')),courts*2);poolF=pool(rank(act.filter(p=>p.g==='f')),courts*2);
   }else{
-    const ranked=rank(act);
-    playing=ranked.slice(0,courts*per); sit=ranked.slice(courts*per);
+    poolA=pool(rank(act),courts*per);
   }
   const lvl=id=>P(id).level||3;
   const teamCost=(a,b)=>{
     let c=0;
     [a,b].forEach(t=>{if(t.length===2){const n=h.partner[pk(t[0],t[1])]||0;c+=n*n*10}});
-    a.forEach(x=>b.forEach(y=>{const n=h.opp[pk(x,y)]||0;c+=n*n*2}));
+    a.forEach(x=>b.forEach(y=>{const k=pk(x,y),n=h.opp[k]||0;
+      // in mixed doubles the two men (and the two women) face each other directly: rotate them hard
+      const same=mode==='mixed'&&(P(x)||{}).g===(P(y)||{}).g;
+      c+=n*n*(same?40:3)+(lastOpp.has(k)?(same?30:6):0)}));
     if(S.settings.balance){const sa=a.reduce((s,i)=>s+lvl(i),0),sb=b.reduce((s,i)=>s+lvl(i),0);c+=Math.abs(sa-sb)*4}
     return c;
   };
   let best=null,bestCost=Infinity;
   for(let it=0;it<800;it++){
-    const sh=mode==='mixed'?null:shuffle(playing.map(p=>p.id));
-    const sm=mode==='mixed'?shuffle(pm):null, sf=mode==='mixed'?shuffle(pf):null;
-    let total=0;const cs=[];
+    const cA=mode==='mixed'?null:pick(poolA),cM=mode==='mixed'?pick(poolM):null,cF=mode==='mixed'?pick(poolF):null;
+    const sh=cA&&shuffle(cA),sm=cM&&shuffle(cM),sf=cF&&shuffle(cF);
+    let total=mode==='mixed'?sitPen(poolM,cM)+sitPen(poolF,cF)+aheadPen(poolM,cM)+aheadPen(poolF,cF):sitPen(poolA,cA)+aheadPen(poolA,cA);const cs=[];
     for(let i=0;i<courts;i++){
       let splits;
       if(mode==='mixed'){
@@ -625,6 +662,7 @@ function generate(silent){
     if(total<bestCost){bestCost=total;best=cs;if(total===0)break}
   }
   if(!S.rounds.length)S.sessionStart=Date.now();
+  const onCourt=new Set(best.flatMap(c=>[...c.a,...c.b]));sit=act.filter(p=>!onCourt.has(p.id));
   S.rounds.push({id:uid(),mode,courts:best.map(c=>({a:c.a,b:c.b,sa:null,sb:null})),sit:sit.map(p=>p.id)});
   if(!silent){save();toast(`จัดรอบที่ ${S.rounds.length} แล้ว`)}
   return true;
@@ -698,7 +736,7 @@ function sessionCard(s){
     <button class="hhead" data-act="openHist" data-id="${s.id}" aria-expanded="${open}">
       <span class="d">${fmtDate(s.start)}</span>
       <span class="chev" aria-hidden="true">›</span>
-      <span class="m">${fmtTime(s.start)}–${fmtTime(s.end)}${modes?' · '+modes:''} · ${s.rounds.length} รอบ · ${games} เกม · ${Object.keys(s.names).length} คน${s.cost?` · ค่าใช้จ่ายคนละ ฿${fmt(s.cost.per)}`:''}${top?` · <b class="champ">อันดับ 1 ${esc(top)}</b>`:''}</span>
+      <span class="m">${fmtTime(s.start)}–${fmtTime(s.end)}${modes?' · '+modes:''} · ${s.rounds.length} รอบ · ${games} เกม · ${Object.keys(s.names).length} คน${s.cost?(s.cost.rows?` · ค่าใช้จ่ายรวม ฿${fmt(s.cost.total)}`:` · ค่าใช้จ่ายคนละ ฿${fmt(s.cost.per)}`):''}${top?` · <b class="champ">อันดับ 1 ${esc(top)}</b>`:''}</span>
     </button>
     ${open?`<div class="hbody">${s.cost?histCost(s.cost):''}
       ${st.length?tableHtml(st,n):'<p class="hint">เซสชันนี้ไม่ได้บันทึกคะแนน</p>'}
@@ -734,9 +772,9 @@ function costCalc(){
   const court=num(c.courtCount)*num(c.hours)*num(c.rate);
   const shuttle=num(c.shuttles)*num(c.shuttlePrice);
   const items=[
-    {name:'ค่าสนาม',detail:`${fmt(num(c.courtCount))} สนาม × ${fmt(num(c.hours))} ชม. × ${fmt(num(c.rate))}`,amount:court},
-    {name:'ค่าลูกแบด',detail:`${fmt(num(c.shuttles))} ลูก × ${fmt(num(c.shuttlePrice))}`,amount:shuttle},
-    ...c.extras.filter(e=>num(e.amount)>0).map(e=>({name:(e.name||'').trim()||'รายการอื่น',detail:'',amount:num(e.amount)}))
+    {key:'court',name:'ค่าสนาม',detail:`${fmt(num(c.courtCount))} สนาม × ${fmt(num(c.hours))} ชม. × ${fmt(num(c.rate))}`,amount:court},
+    {key:'shuttle',name:'ค่าลูกแบด',detail:`${fmt(num(c.shuttles))} ลูก × ${fmt(num(c.shuttlePrice))}`,amount:shuttle},
+    ...c.extras.filter(e=>num(e.amount)>0).map(e=>({key:e.id,name:(e.name||'').trim()||'รายการอื่น',detail:'',amount:num(e.amount)}))
   ];
   const total=items.reduce((t,i)=>t+i.amount,0);
   const all=participants();
@@ -753,17 +791,25 @@ function costCalc(){
   const payers=all.filter(id=>!c.exclude.includes(id)&&!free.includes(id));
   const n=payers.length, exact=n?total/n:0;
   const per=c.round>0?Math.ceil(Math.round(exact*100)/100/c.round)*c.round:Math.round(exact*100)/100;
-  return {items,total,all,payers,free,fst,n,exact,per,collected:per*n};
+  const custom=c.split==='custom',al=c.alloc||{},H=num(c.hours);
+  const wOf=(id,key)=>{const a=al[id]||{};if(key==='court')return custom?Math.min(H,num(a.h==null||a.h===''?H:a.h)):1;return custom&&a.off&&a.off[key]?0:1};
+  const sums={};items.forEach(it=>{sums[it.key]=payers.reduce((s,id)=>s+wOf(id,it.key),0)});
+  const step=c.round>0?c.round:0;
+  const rows=payers.map(id=>{const parts={};let t=0;items.forEach(it=>{const v=sums[it.key]?it.amount*wOf(id,it.key)/sums[it.key]:0;parts[it.key]=v;t+=v});
+    const tr=Math.round(t*100)/100;return {id,parts,total:t,pay:step?Math.ceil(tr/step)*step:tr,h:wOf(id,'court')}});
+  const unassigned=items.filter(it=>it.amount>0&&!sums[it.key]).map(it=>it.name);
+  return {items,total,all,payers,free,fst,n,exact,per,collected:custom?rows.reduce((s,r)=>s+r.pay,0):per*n,custom,rows,unassigned};
 }
 function billHtml(k){
   const r=S.cost.round;
   const extra=k.collected-k.total;
-  return `<div class="bill-top"><span class="lbl">คนละ</span><span class="big">฿${fmt(k.per)}</span><span class="lbl">หาร ${k.n} คน</span></div>
+  return `<div class="bill-top">${k.custom?`<span class="lbl">รวม</span><span class="big">฿${fmt(k.total)}</span><span class="lbl">แบ่งรายคน ${k.n} คน</span>`:`<span class="lbl">คนละ</span><span class="big">฿${fmt(k.per)}</span><span class="lbl">หาร ${k.n} คน</span>`}</div>
     <div class="lines">${k.items.map(i=>`<div class="ln2"><span>${esc(i.name)}${i.detail?`<small>${i.detail}</small>`:''}</span><b>${fmt(i.amount)}</b></div>`).join('')}
       <div class="ln2 tot"><span>รวม</span><b>฿${fmt(k.total)}</b></div>
       ${k.free.length?`<div class="freeline">ผู้ชนะไม่ต้องจ่าย: <b>${k.free.map(id=>esc(nm(id))).join(', ')}</b></div>`:''}
-      ${k.n&&Math.abs(extra)>0.005?`<div class="ln2 note"><span>เก็บได้ ${k.n} × ${fmt(k.per)}</span><b>฿${fmt(k.collected)} (เกิน ${fmt(extra)})</b></div>`:''}
+      ${k.n&&S.cost.round>0&&Math.abs(extra)>0.005?`<div class="ln2 note"><span>${k.custom?'เก็บได้รวม':`เก็บได้ ${k.n} × ${fmt(k.per)}`}</span><b>฿${fmt(k.collected)} (เกิน ${fmt(extra)})</b></div>`:''}
     </div>
+    ${k.custom?shareTable(k):''}
     <div class="row spread">
       <div class="seg" role="group" aria-label="ปัดเศษ">${[[0,'ไม่ปัด'],[1,'ปัด 1'],[5,'ปัด 5'],[10,'ปัด 10']].map(([v,l])=>`<button data-act="round" data-v="${v}" aria-pressed="${r===v}">${l}</button>`).join('')}</div>
       <button class="btn small" data-act="copyCost">คัดลอกสรุปไปส่งในกลุ่ม</button>
@@ -774,10 +820,27 @@ function costText(k){
   return [`BADMINTON MIX&MATCH · ${fmtDate(+d)}`,
     ...k.items.map(i=>`${i.name}${i.detail?' ('+i.detail+')':''} = ${fmt(i.amount)}`),
     `รวม ${fmt(k.total)} บาท / ${k.n} คน`,
-    `คนละ ${fmt(k.per)} บาท`,
+    ...(k.custom?k.rows.map(r=>`${nm(r.id)} ${fmt(r.pay)} บาท`):[`คนละ ${fmt(k.per)} บาท`]),
     ...(k.free.length?[`ผู้ชนะไม่ต้องจ่าย: ${k.free.map(nm).join(', ')}`]:[]),
     `ผู้ร่วมหาร: ${k.payers.map(nm).join(', ')}`,
     ...(payText()?[payText()]:[])].join('\n');
+}
+function shareTable(k){
+  const cols=k.items.filter(it=>it.amount>0),H=num(S.cost.hours);
+  return `${k.unassigned.length?`<p class="hint err">ยังไม่มีใครรับ: ${k.unassigned.map(esc).join(', ')}</p>`:''}
+    <div class="sharehead">ใครจ่ายเท่าไร</div>
+    <div class="tbl"><table class="share"><thead><tr><th>ผู้เล่น</th>${cols.map(it=>`<th>${esc(it.name)}</th>`).join('')}<th>จ่าย</th></tr></thead>
+    <tbody>${k.rows.map(r=>`<tr><td>${esc(nm(r.id))}${r.h<H?`<small>${fmt(r.h)} ชม.</small>`:''}</td>${cols.map(it=>`<td class="n">${r.parts[it.key]?fmt(Math.round(r.parts[it.key]*100)/100):'–'}</td>`).join('')}<td class="n"><b>฿${fmt(r.pay)}</b></td></tr>`).join('')}</tbody></table></div>`;
+}
+function allocHtml(k){
+  const c=S.cost,al=c.alloc||{},H=num(c.hours);
+  const cols=[{key:'shuttle',name:'ค่าลูก'},...c.extras.map(e=>({key:e.id,name:(e.name||'').trim()||'รายการอื่น'}))];
+  if(!k.payers.length)return '<p class="hint">ยังไม่มีผู้ร่วมหาร</p>';
+  return `<div class="tbl"><table class="share alloc"><thead><tr><th>ผู้เล่น</th><th>ชม. สนาม</th>${cols.map(x=>`<th>${esc(x.name)}</th>`).join('')}</tr></thead><tbody>
+    ${k.payers.map(id=>{const a=al[id]||{},off=a.off||{};return `<tr><td>${esc(nm(id))}</td>
+      <td><input class="hin" type="number" inputmode="decimal" min="0" max="${H}" step="0.5" id="al-h-${id}" data-act="alloc" data-id="${id}" data-k="h" value="${a.h==null||a.h===''?H:a.h}" aria-label="ชั่วโมงสนามของ ${esc(nm(id))}"></td>
+      ${cols.map(x=>`<td><input type="checkbox" id="al-${x.key}-${id}" data-act="alloc" data-id="${id}" data-k="${x.key}"${off[x.key]?'':' checked'} aria-label="${esc(nm(id))} ร่วมจ่าย${esc(x.name)}"></td>`).join('')}</tr>`}).join('')}
+  </tbody></table></div>`;
 }
 function renderCost(){
   const c=S.cost, k=costCalc();
@@ -799,6 +862,11 @@ function renderCost(){
       <div class="ccard"><div class="ch3">ผู้ร่วมหาร <b>${k.n} / ${k.all.length} คน</b></div>
         ${k.all.length?`<div class="payers">${k.all.map(id=>k.free.includes(id)?`<span class="pchip free">${esc(nm(id))} · ฟรี</span>`:`<button class="pchip" data-act="payer" data-id="${id}" aria-pressed="${!c.exclude.includes(id)}">${esc(nm(id))}</button>`).join('')}</div>
         <p class="hint">แตะชื่อเพื่อไม่นับคนนั้นในการหาร</p>`:'<p class="hint">ยังไม่มีผู้เล่น</p>'}</div>
+      <div class="ccard"><div class="ch3">วิธีหาร</div>
+        <div class="seg" role="group" aria-label="วิธีหาร">${[['equal','หารเท่ากัน'],['custom','กำหนดรายคน']].map(([v,l])=>`<button data-act="split" data-v="${v}" aria-pressed="${(c.split||'equal')===v}">${l}</button>`).join('')}</div>
+        <p class="hint">${c.split==='custom'?'ค่าสนามหารตามชั่วโมงที่แต่ละคนใช้ ค่าลูกและรายการอื่นหารเฉพาะคนที่ติ๊ก':'ทุกคนจ่ายเท่ากันทุกรายการ'}</p></div>
+      ${c.split==='custom'?`<div class="ccard allocard"><div class="ch3">กำหนดรายคน <b>สนาม ${fmt(num(c.hours))} ชม.</b></div>
+        <p class="hint">ใส่ชั่วโมงที่แต่ละคนอยู่สนาม เช่น มา 1 จาก 2 ชม. ใส่ 1 แล้วเอาติ๊กออกจากรายการที่คนนั้นไม่ต้องร่วมจ่าย</p>${allocHtml(k)}</div>`:''}
       <div class="ccard"><div class="ch3">ผู้ชนะไม่ต้องจ่าย</div>
         <div class="seg" role="group" aria-label="ผู้ชนะไม่ต้องจ่าย">${[[0,'ปิด'],[1,'อันดับ 1'],[2,'อันดับ 1–2'],[3,'อันดับ 1–3']].map(([v,l])=>`<button data-act="winFree" data-v="${v}" aria-pressed="${(c.winnerFree||0)===v}">${l}</button>`).join('')}</div>
         ${!c.winnerFree?'<p class="hint">เปิดเพื่อให้ผู้เล่นอันดับต้นในตารางอันดับของเซสชันนี้ไม่ต้องจ่าย ถ้าสถิติเท่ากันจะได้ฟรีทุกคนที่เท่ากัน</p>'
@@ -827,7 +895,8 @@ function updateCostLive(){
   const pv=$('payPreview');if(pv)pv.innerHTML=payPreview(k);
 }
 function histCost(c){
-  return `<div class="hcost"><div class="ch3">ค่าใช้จ่าย <b>รวม ฿${fmt(c.total)} · คนละ ฿${fmt(c.per)} (${c.n} คน)</b></div>
+  return `<div class="hcost"><div class="ch3">ค่าใช้จ่าย <b>รวม ฿${fmt(c.total)} · ${c.rows?'แบ่งรายคน':'คนละ ฿'+fmt(c.per)} (${c.n} คน)</b></div>
+    ${c.rows?c.rows.map(r=>`<div class="ln2"><span>${esc(r.n)}</span><b>฿${fmt(r.pay)}</b></div>`).join(''):''}
     ${c.items.map(i=>`<div class="ln2"><span>${esc(i.name)}${i.detail?`<small>${i.detail}</small>`:''}</span><b>${fmt(i.amount)}</b></div>`).join('')}
     ${c.free&&c.free.length?`<div class="freeline">ผู้ชนะไม่ต้องจ่าย: <b>${c.free.map(esc).join(', ')}</b></div>`:''}</div>`;
 }
@@ -868,13 +937,13 @@ function payPreview(k){
   }
   if(p.method==='promptpay'){
     if(!p.pp)return '<p class="hint">ใส่เบอร์มือถือหรือเลขบัตรประชาชนที่ผูกพร้อมเพย์ ระบบจะสร้าง QR ใส่ยอดคนละให้อัตโนมัติ</p>';
-    const pl=ppPayload(p.pp,k.per);
+    const pl=ppPayload(p.pp,k.custom?0:k.per);
     if(!pl)return '<p class="hint err">รูปแบบไม่ถูกต้อง ใส่เบอร์มือถือ 10 หลัก หรือเลขบัตรประชาชน 13 หลัก</p>';
     const img=qrImg(pl);
     return `<div class="paybox">${img?`<img class="qr" src="${img}" alt="QR พร้อมเพย์ ยอด ${fmt(k.per)} บาท">`:'<p class="hint">สร้างรูป QR ไม่ได้ในตอนนี้ ลองเปิดหน้านี้ใหม่อีกครั้ง</p>'}
-      <div class="lbl">สแกนจ่ายพร้อมเพย์</div><div class="acct">฿${fmt(k.per)}</div><div>${esc(p.pp)}${p.ppName?' · '+esc(p.ppName):''}</div></div>`;
+      <div class="lbl">สแกนจ่ายพร้อมเพย์</div><div class="acct">${k.custom?'<small>ยอดตามตาราง ใครจ่ายเท่าไร</small>':'฿'+fmt(k.per)}</div><div>${esc(p.pp)}${p.ppName?' · '+esc(p.ppName):''}</div></div>`;
   }
-  return p.qr?`<div class="paybox"><img class="qr up" src="${p.qr}" alt="QR Code สำหรับชำระเงิน"><div class="lbl">สแกนจ่ายคนละ</div><div class="acct">฿${fmt(k.per)}</div>
+  return p.qr?`<div class="paybox"><img class="qr up" src="${p.qr}" alt="QR Code สำหรับชำระเงิน"><div class="lbl">สแกนจ่ายคนละ</div><div class="acct">${k.custom?'<small>ยอดตามตาราง ใครจ่ายเท่าไร</small>':'฿'+fmt(k.per)}</div>
       <div class="row" style="justify-content:center"><label class="btn small" for="qrFile">เปลี่ยนรูป</label><button class="btn small warn" data-act="qrRemove">ลบรูป</button></div></div>`
     :`<label class="drop" for="qrFile"><b>อัปโหลดรูป QR Code</b><span>เช่น QR รับเงินจากแอพธนาคาร</span></label>`;
 }
@@ -900,9 +969,9 @@ function archiveSession(){
   S.rounds.forEach(r=>{r.sit.forEach(i=>ids.add(i));r.courts.forEach(c=>[...c.a,...c.b].forEach(i=>ids.add(i)))});
   const names={};ids.forEach(id=>{const p=P(id);names[id]={n:p?p.name:'?',g:p&&p.g||''}});
   const cc=costCalc();
-  const cost=cc.total>0?{items:cc.items,total:cc.total,n:cc.n,per:cc.per,payers:cc.payers.map(nm),free:cc.free.map(nm)}:null;
+  const cost=cc.total>0?{items:cc.items,total:cc.total,n:cc.n,per:cc.per,payers:cc.payers.map(nm),free:cc.free.map(nm),rows:cc.custom?cc.rows.map(r=>({n:nm(r.id),pay:r.pay})):null}:null;
   S.archive.unshift({id:uid(),start:S.sessionStart||Date.now(),end:Date.now(),names,rounds:S.rounds,cost});
-  if(S.cost){S.cost.exclude=[];S.cost.extras=[];}
+  if(S.cost){S.cost.exclude=[];S.cost.extras=[];S.cost.alloc={};}
   S.rounds=[];S.sessionStart=null;
   return true;
 }
@@ -1104,6 +1173,7 @@ function renderTour(){
     <div class="row spread"><h2>${esc(T.name)}</h2><p class="hint">จัดทีมเอง แบ่งสาย แล้วแข่งในสาย</p></div>
     <div class="row edit-only trename"><label class="fld"><span>ชื่อทัวร์นาเมนต์นี้</span><input type="text" id="tName-${T.id}" data-act="t-name" maxlength="60" value="${esc(T.name)}"></label>
       <button class="btn small warn${armed==='tdel'?' armed':''}" data-act="t-delTour">${armed==='tdel'?'กดอีกครั้งเพื่อลบทัวร์นาเมนต์นี้ถาวร':'ลบทัวร์นาเมนต์นี้'}</button></div>
+    ${T.ko?`<div class="tgroup"><div class="bhead"><h3>สายการแข่งขัน</h3><button class="btn small" data-act="t-img">บันทึกรูปสายการแข่ง</button></div><p class="hint">เลื่อนซ้าย-ขวาเพื่อดูสายทั้งหมด</p><div class="bwrap" id="bracketBox">${bracketHtml()}</div><div class="tmatches">${koRows()}</div></div>`:''}
     <div class="tctl edit-only">
       <div class="ccard"><div class="ch3">1. จัดทีม <b>${T.teams.length} ทีม</b></div>
         <div class="seg" role="group" aria-label="ประเภททีม">${[['doubles','ทีมคู่'],['singles','เดี่ยว']].map(([v,l])=>`<button data-act="t-type" data-v="${v}" aria-pressed="${T.type===v}">${l}</button>`).join('')}</div>
@@ -1130,7 +1200,6 @@ function renderTour(){
     </div>
     ${T.teams.length?`<div class="ccard"><div class="ch3">ทีมทั้งหมด <b>${T.teams.length} ทีม</b></div><div class="tteams">${teams.map(teamRow).join('')}</div></div>`
       :`<div class="empty">ยังไม่มีทีม ${S.players.filter(p=>!p.removed).length?'เลือกผู้เล่นเพื่อเพิ่มทีม หรือกดจับคู่อัตโนมัติ':'เพิ่มผู้เล่นในแท็บผู้เล่นก่อน'}</div>`}
-    ${T.ko?`<div class="tgroup"><h3>สายการแข่งขัน</h3><p class="hint">เลื่อนซ้าย-ขวาเพื่อดูสายทั้งหมด</p><div class="bwrap" id="bracketBox">${bracketHtml()}</div><div class="tmatches">${koRows()}</div></div>`:''}
     ${sections}`;
   requestAnimationFrame(drawBracket);
 }
@@ -1234,11 +1303,154 @@ function koRows(){
   return out||'<p class="hint">ใส่คะแนนรอบก่อนหน้าให้ครบ แล้วคู่ถัดไปจะขึ้นที่นี่</p>';
 }
 
+/* ---------- bracket image (drawn on canvas, for saving / sharing) ---------- */
+const IMG_C={bg:'#164f37',bg2:'#1e6747',box:'rgba(0,0,0,.2)',boxLine:'rgba(255,255,255,.55)',line:'rgba(255,255,255,.72)',ink:'#f4fbf6',dim:'rgba(244,251,246,.62)',gold:'#efb04f',goldInk:'#2a1a03',
+  gc:['#4fd18b','#ff6b6b','#ffb23f','#5b8cff','#b77cff','#d6e04a','#ff7ac1','#4fd1d9']};
+const IF_D='"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif',IF_B='"IBM Plex Sans Thai",system-ui,sans-serif',IF_N='"JetBrains Mono",ui-monospace,monospace';
+function cRR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function cFit(ctx,t,w){t=String(t);if(ctx.measureText(t).width<=w)return t;while(t.length>1&&ctx.measureText(t+'…').width>w)t=t.slice(0,-1);return t+'…'}
+function cShuttle(ctx,cx,cy,size,won){
+  ctx.save();ctx.translate(cx,cy);ctx.scale(size/48,size/48);ctx.translate(0,2);ctx.rotate(-32*Math.PI/180);ctx.translate(-24,-26);
+  ctx.globalAlpha=won?1:.6;ctx.strokeStyle=IMG_C.ink;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.lineWidth=2.6;ctx.stroke(new Path2D('M12 9.5 Q24 5.4 36 9.5'));
+  ctx.lineWidth=2;ctx.globalAlpha=won?.55:.35;ctx.stroke(new Path2D('M15.3 20 Q24 17.9 32.7 20'));ctx.globalAlpha=won?1:.6;
+  ctx.lineWidth=2.4;ctx.stroke(new Path2D('M19 32 L12 9.5 M22.3 32 L20 7 M25.7 32 L28 7 M29 32 L36 9.5'));
+  ctx.fillStyle=IMG_C.ink;cRR(ctx,17.4,30.6,13.2,3.6,1.4);ctx.fill();
+  ctx.globalAlpha=1;ctx.fillStyle=IMG_C.gold;ctx.fill(new Path2D('M17.6 34 H30.4 A6.4 6.8 0 0 1 17.6 34 Z'));
+  ctx.restore();
+}
+async function bracketImage(){
+  const T=tour(),ko=T.ko;if(!ko)return null;
+  try{await Promise.all(['700 30px "Bai Jamjuree"','500 13px "IBM Plex Sans Thai"','700 13px "IBM Plex Sans Thai"','700 13px "JetBrains Mono"'].map(f=>document.fonts.load(f)))}catch(e){}
+  const R=ko.rounds.length,big=ko.rounds[0].length>=16;
+  const BW=big?150:180,RH=big?23:28,LH=big?0:16,BH=LH+RH*2+1,GAP=big?10:18,CG=big?30:44,FS=big?12:13.5;
+  const FW=260,FRH=40,FBH=14+FRH*2+26;
+  const gs=tGroupsList().filter(g=>T.teams.some(t=>t.group===g));
+  const half=Math.ceil(gs.length/2),LG=gs.length>1?gs.slice(0,half):[],RG=gs.length>1?gs.slice(half):[];
+  const GW=180,GRH=20,gH=g=>34+tStand(g).length*GRH+8;
+  const sumG=a=>a.reduce((s,g)=>s+gH(g),0)+Math.max(0,a.length-1)*16;
+  const n0=R>1?ko.rounds[0].length/2:0,bracketH=n0?n0*BH+(n0-1)*GAP:0;
+  const below=24+76+34+46+(ko.third?34+BH:0);
+  const CH=Math.max(bracketH,sumG(LG),sumG(RG),70+FBH+below);
+  const HEAD=118,PAD=44,FOOT=46,top=HEAD;
+  const cols=[];if(LG.length)cols.push({t:'gL',w:GW});
+  for(let r=0;r<R-1;r++)cols.push({t:'L',r,w:BW});cols.push({t:'F',w:FW});
+  for(let r=R-2;r>=0;r--)cols.push({t:'R',r,w:BW});if(RG.length)cols.push({t:'gR',w:GW});
+  let x=PAD;cols.forEach((c,i)=>{c.x=x;x+=c.w+(i<cols.length-1?CG:0)});
+  const W=Math.max(x+PAD,640),H=HEAD+CH+FOOT;
+  if(W<x+PAD)cols.forEach(c=>c.x+=0);else{const sh=(W-(x+PAD))/2;cols.forEach(c=>c.x+=sh)}
+  const col=(t,r)=>cols.find(c=>c.t===t&&(r==null||c.r===r));
+  const SC=Math.min(2,7800/W);
+  const cv=document.createElement('canvas');cv.width=Math.round(W*SC);cv.height=Math.round(H*SC);
+  const ctx=cv.getContext('2d');ctx.scale(SC,SC);
+  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,IMG_C.bg2);bg.addColorStop(1,IMG_C.bg);ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  ctx.textBaseline='middle';ctx.textAlign='center';
+  ctx.fillStyle=IMG_C.ink;ctx.font=`700 36px ${IF_D}`;ctx.fillText(cFit(ctx,T.name,W-2*PAD),W/2,52);
+  ctx.fillStyle=IMG_C.dim;ctx.font=`500 15px ${IF_B}`;ctx.fillText(`สายการแข่งขัน · ${T.teams.length} ทีม · ${fmtDate(Date.now())}`,W/2,86);
+  // vertical centres of every match
+  const cy={};
+  if(R>1){ko.rounds[0].forEach((m,i)=>{const k=i<n0?i:i-n0;cy['0-'+i]=top+(CH-bracketH)/2+k*(BH+GAP)+BH/2});
+    for(let r=1;r<R;r++)ko.rounds[r].forEach((m,i)=>{cy[r+'-'+i]=(cy[(r-1)+'-'+(2*i)]+cy[(r-1)+'-'+(2*i+1)])/2})}
+  const fc=col('F'),fx=fc.x;
+  let fy=(R>1?cy[(R-1)+'-0']:top+CH/2)-FBH/2;
+  fy=Math.max(fy,top+70);fy=Math.min(fy,top+CH-below-FBH);
+  const fMid=fy+FBH/2;
+  // connector lines
+  ctx.strokeStyle=IMG_C.line;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.beginPath();
+  for(let r=0;r<R-1;r++){const len=ko.rounds[r].length;ko.rounds[r].forEach((m,i)=>{
+    const L=i<len/2,c=col(L?'L':'R',r),x1=L?c.x+BW:c.x,y1=cy[r+'-'+i];
+    let x2,y2;if(r+1===R-1){x2=L?fx:fx+FW;y2=fMid}else{const p=col(L?'L':'R',r+1);x2=L?p.x:p.x+BW;y2=cy[(r+1)+'-'+(i>>1)]}
+    const xm=(x1+x2)/2;ctx.moveTo(x1,y1);ctx.lineTo(xm,y1);ctx.lineTo(xm,y2);ctx.lineTo(x2,y2)})}
+  ctx.stroke();
+  let no=0;const num={};ko.rounds.forEach(ms=>ms.forEach(m=>{num[m.id]=++no}));
+  const teamRow=(id,sc,win,x,y,w,h,r0)=>{
+    if(win){ctx.fillStyle=IMG_C.gold;ctx.fillRect(x,y,w,h)}
+    ctx.textAlign='left';ctx.fillStyle=win?IMG_C.goldInk:id?IMG_C.ink:IMG_C.dim;ctx.font=`${win?700:500} ${FS}px ${IF_B}`;
+    ctx.fillText(cFit(ctx,id?tName(id):r0?'BYE':'รอผล',w-46),x+9,y+h/2+1);
+    if(sc!=null){ctx.textAlign='right';ctx.font=`700 ${FS}px ${IF_N}`;ctx.fillText(String(sc),x+w-9,y+h/2+1)}
+  };
+  const box=(m,r,x,y,label)=>{
+    const w0=r==='third'?(tkDone(m)?(m.sa>m.sb?m.a:m.b):null):tkWinner(m,r);
+    ctx.save();cRR(ctx,x,y,BW,BH,7);ctx.fillStyle=IMG_C.box;ctx.fill();ctx.clip();
+    let yy=y;if(LH){ctx.fillStyle=IMG_C.dim;ctx.font=`500 10.5px ${IF_B}`;ctx.textAlign='left';ctx.fillText(label,x+9,y+LH/2+2);yy+=LH}
+    teamRow(m.a,m.sa,w0&&w0===m.a,x,yy,BW,RH,r===0);ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(x,yy+RH,BW,1);
+    teamRow(m.b,m.sb,w0&&w0===m.b,x,yy+RH+1,BW,RH,r===0);ctx.restore();
+    cRR(ctx,x,y,BW,BH,7);ctx.strokeStyle=IMG_C.boxLine;ctx.lineWidth=1;ctx.stroke();
+  };
+  for(let r=0;r<R-1;r++){const len=ko.rounds[r].length;ko.rounds[r].forEach((m,i)=>{const L=i<len/2,c=col(L?'L':'R',r);box(m,r,c.x,cy[r+'-'+i]-BH/2,'คู่ที่ '+num[m.id])})}
+  // groups on the far sides
+  const groupCards=(arr,c)=>{if(!c)return;let y=top+(CH-sumG(arr))/2;arr.forEach(g=>{
+    const st=tStand(g),h=gH(g),clr=IMG_C.gc[GL_ABC.indexOf(g)%8];
+    cRR(ctx,c.x,y,GW,h,10);ctx.fillStyle='rgba(0,0,0,.22)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=clr;ctx.stroke();
+    ctx.textAlign='left';ctx.fillStyle=clr;ctx.font=`700 16px ${IF_D}`;ctx.fillText('สาย '+g,c.x+13,y+18);
+    st.forEach((s,i)=>{ctx.globalAlpha=(!ko.k||i<ko.k)?1:.45;ctx.fillStyle=IMG_C.ink;ctx.font=`700 12.5px ${IF_N}`;ctx.fillText(String(i+1),c.x+13,y+40+i*GRH);
+      ctx.font=`500 13px ${IF_B}`;ctx.fillText(cFit(ctx,tName(s.id),GW-44),c.x+31,y+40+i*GRH);ctx.globalAlpha=1});
+    y+=h+16})};
+  groupCards(LG,col('gL'));groupCards(RG,col('gR'));
+  // final
+  const fin=ko.rounds[R-1][0],fw=tkWinner(fin,R-1),cx=fx+FW/2;
+  ctx.textAlign='center';ctx.fillStyle=IMG_C.gold;ctx.font=`700 44px ${IF_D}`;ctx.fillText('FINAL',cx,fy-42);
+  ctx.fillStyle=IMG_C.dim;ctx.font=`500 12px ${IF_B}`;ctx.fillText('ชิงชนะเลิศ',cx,fy-14);
+  ctx.save();ctx.shadowColor='rgba(239,176,79,.45)';ctx.shadowBlur=24;cRR(ctx,fx,fy,FW,FBH,13);
+  const fg=ctx.createLinearGradient(0,fy,0,fy+FBH);fg.addColorStop(0,'rgba(239,176,79,.26)');fg.addColorStop(1,'rgba(0,0,0,.2)');ctx.fillStyle=fg;ctx.fill();ctx.restore();
+  cRR(ctx,fx,fy,FW,FBH,13);ctx.lineWidth=2.5;ctx.strokeStyle=IMG_C.gold;ctx.stroke();
+  const fRow=(id,sc,win,y)=>{cRR(ctx,fx+8,y,FW-16,FRH,8);ctx.fillStyle=win?IMG_C.gold:'rgba(255,255,255,.1)';ctx.fill();
+    ctx.textAlign='left';ctx.fillStyle=win?IMG_C.goldInk:id?IMG_C.ink:IMG_C.dim;ctx.font=`700 18px ${IF_D}`;ctx.fillText(cFit(ctx,id?tName(id):'รอผล',FW-80),fx+20,y+FRH/2+1);
+    if(sc!=null){ctx.textAlign='right';ctx.font=`700 19px ${IF_N}`;ctx.fillText(String(sc),fx+FW-20,y+FRH/2+1)}};
+  fRow(fin.a,fin.sa,fw&&fw===fin.a,fy+7);
+  ctx.textAlign='center';ctx.fillStyle=IMG_C.gold;ctx.font=`700 13px ${IF_N}`;ctx.fillText('V S',cx,fy+7+FRH+13);
+  fRow(fin.b,fin.sb,fw&&fw===fin.b,fy+7+FRH+26);
+  let yb=fy+FBH+24;
+  cShuttle(ctx,cx,yb+36,76,!!fw);yb+=82;
+  ctx.textAlign='center';ctx.font=`700 18px ${IF_D}`;const tn=cFit(ctx,T.name,FW+40),tw=ctx.measureText(tn).width;
+  ctx.fillStyle=IMG_C.ink;ctx.fillText(tn,cx,yb+10);ctx.strokeStyle=IMG_C.line;ctx.lineWidth=1;ctx.beginPath();
+  ctx.moveTo(cx-tw/2-34,yb+10);ctx.lineTo(cx-tw/2-10,yb+10);ctx.moveTo(cx+tw/2+10,yb+10);ctx.lineTo(cx+tw/2+34,yb+10);ctx.stroke();
+  yb+=34;
+  ctx.textAlign='center';
+  if(fw){ctx.fillStyle=IMG_C.dim;ctx.font=`500 12.5px ${IF_B}`;ctx.fillText('แชมป์',cx,yb);ctx.fillStyle=IMG_C.gold;ctx.font=`700 21px ${IF_D}`;ctx.fillText(cFit(ctx,tName(fw),FW+40),cx,yb+24)}
+  else{ctx.fillStyle=IMG_C.dim;ctx.font=`500 13px ${IF_B}`;ctx.fillText('รอผลนัดชิง',cx,yb+10)}
+  yb+=46;
+  if(ko.third){ctx.textAlign='center';ctx.fillStyle=IMG_C.ink;ctx.font=`700 14px ${IF_D}`;ctx.fillText('ชิงที่ 3',cx,yb+10);box(ko.third,'third',cx-BW/2,yb+26,'ชิงที่ 3')}
+  ctx.textAlign='right';ctx.fillStyle=IMG_C.dim;ctx.font=`600 12px ${IF_D}`;ctx.fillText('BADMINTON MIX&MATCH',W-PAD,H-22);
+  return cv;
+}
+let bImgBlob=null,bImgUrl=null;
+async function openBracketImage(){
+  const T=tour();if(!T.ko){toast('ยังไม่มีสายการแข่งขัน');return}
+  toast('กำลังสร้างรูป…');
+  let cv;try{cv=await bracketImage()}catch(e){toast('สร้างรูปไม่สำเร็จ ลองใหม่อีกครั้ง');return}
+  bImgBlob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  if(bImgUrl)URL.revokeObjectURL(bImgUrl);bImgUrl=URL.createObjectURL(bImgBlob);
+  const dataUrl=cv.toDataURL('image/png');
+  const fname=((T.name||'bracket').replace(/[\\/:*?"<>|]+/g,'').trim().slice(0,50)||'bracket')+'.png';
+  let m=$('imgModal');
+  if(!m){m=document.createElement('div');m.id='imgModal';m.className='imgmodal';document.body.appendChild(m);
+    m.addEventListener('click',e=>{if(e.target===m)m.hidden=true})}
+  m.dataset.fname=fname;
+  m.innerHTML=`<div class="imgbox" role="dialog" aria-modal="true" aria-label="รูปสายการแข่งขัน">
+    <div class="row spread"><b>รูปสายการแข่งขัน</b><button class="x" data-act="t-imgClose" aria-label="ปิด">×</button></div>
+    <div class="imgscroll"><img src="${dataUrl}" alt="รูปสายการแข่งขัน ${esc(T.name)}"></div>
+    <div class="row"><button class="btn primary" data-act="t-imgShare">บันทึกลงเครื่อง / แชร์</button>${window.claude?'':`<a class="btn" href="${bImgUrl}" download="${esc(fname)}">ดาวน์โหลดไฟล์</a>`}</div>
+    <p class="hint">ถ้าปุ่มใช้ไม่ได้ ให้กดค้างที่รูป แล้วเลือก “บันทึกรูปภาพ” หรือ “เพิ่มไปยังรูปภาพ”</p></div>`;
+  m.hidden=false;toast('สร้างรูปแล้ว');
+}
+async function shareBracketImage(){
+  const m=$('imgModal');if(!bImgBlob||!m)return;
+  const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+  if(dl){try{await dl.save({filename:m.dataset.fname,data:bImgBlob});toast('บันทึกรูปแล้ว')}catch(e){if(e&&e.code==='declined')return;toast('บันทึกไม่สำเร็จ กดค้างที่รูปแล้วเลือก “บันทึกรูปภาพ”')}return}
+  const f=new File([bImgBlob],m.dataset.fname,{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:tour().name})}catch(e){}return}
+  toast('เครื่องนี้แชร์รูปจากหน้านี้ไม่ได้ กดค้างที่รูปแล้วเลือก “บันทึกรูปภาพ”');
+}
+
 let tkPending=false;
 function tkFlush(){if(!tkPending)return;const ae=document.activeElement;if(ae&&ae.dataset&&ae.dataset.act==='t-kscore')return;tkPending=false;renderTour()}
 document.addEventListener('focusout',()=>{if(tkPending)setTimeout(tkFlush,0)});
 function tourClick(a,b){
   const T=tour();
+  if(a==='t-img'){openBracketImage();return}
+  if(a==='t-imgShare'){shareBracketImage();return}
+  if(a==='t-imgClose'){const m=$('imgModal');if(m)m.hidden=true;return}
   if(a==='t-type'){T.type=b.dataset.v}
   else if(a==='t-addTeam'){
     const per=T.type==='doubles'?2:1,p1=$('tp1').value,p2=$('tp2')?$('tp2').value:'';
@@ -1310,7 +1522,7 @@ document.addEventListener('click',e=>{
   const a=b.dataset.act;
   if(CLOUD_ACTS.has(a)){cloudClick(a,b);return}
   if(!S)return;
-  if(APPMODE==='viewer'&&!['tab','openHist','copyCost','copyAcct','t-pick'].includes(a))return;
+  if(APPMODE==='viewer'&&!['tab','openHist','copyCost','copyAcct','t-pick','t-img','t-imgShare','t-imgClose'].includes(a))return;
   if(APPMODE==='viewer'&&a==='tab'){S.tab=b.dataset.v;render();return}
   if(a.indexOf('t-')===0){tourClick(a,b);return}
   if(a==='tab'){S.tab=b.dataset.v}
@@ -1335,6 +1547,7 @@ document.addEventListener('click',e=>{
   else if(a==='qrRemove'){S.pay.qr=null}
   else if(a==='copyAcct'){const t=S.pay.acct.replace(/\D/g,'');try{navigator.clipboard.writeText(t).then(()=>toast('คัดลอกเลขบัญชีแล้ว'),()=>toast('เลขบัญชี: '+t))}catch(err){toast('เลขบัญชี: '+t)}return}
   else if(a==='winFree'){S.cost.winnerFree=+b.dataset.v}
+  else if(a==='split'){S.cost.split=b.dataset.v;if(!S.cost.alloc)S.cost.alloc={}}
   else if(a==='copyCost'){
     const txt=costText(costCalc());const box=$('copyBox');
     const fallback=()=>{box.value=txt;box.hidden=false;box.focus();box.select();toast('เลือกข้อความแล้ว กดคัดลอกได้เลย')};
@@ -1363,6 +1576,7 @@ document.addEventListener('change',e=>{
     rd.readAsDataURL(file);el.value='';return;
   }
   if(el.dataset.act==='pay'&&el.tagName==='SELECT'){S.pay[el.dataset.k]=el.value;save();const pv=$('payPreview');if(pv)pv.innerHTML=payPreview(costCalc())}
+  if(el.dataset.act==='alloc'&&el.type==='checkbox'){const al=S.cost.alloc||(S.cost.alloc={});const a=al[el.dataset.id]||(al[el.dataset.id]={});a.off=a.off||{};a.off[el.dataset.k]=!el.checked;save();updateCostLive();return}
   if(el.dataset.act==='level'){P(el.dataset.id).level=+el.value;save()}
   if(el.dataset.act==='score'){
     const c=S.rounds[+el.dataset.r].courts[+el.dataset.c];
@@ -1375,6 +1589,7 @@ document.addEventListener('input',e=>{
   if(!S||APPMODE==='viewer'||APPMODE==='home')return;
   if(el.dataset.act==='cost'){S.cost[k]=el.value===''?'':+el.value;save();updateCostLive()}
   else if(el.dataset.act==='pay'){S.pay[k]=el.value;save();const pv=$('payPreview');if(pv)pv.innerHTML=payPreview(costCalc())}
+  else if(el.dataset.act==='alloc'&&el.type!=='checkbox'){const al=S.cost.alloc||(S.cost.alloc={});const a=al[el.dataset.id]||(al[el.dataset.id]={});a.h=el.value===''?'':+el.value;save();updateCostLive()}
   else if(el.dataset.act==='extra'){const x=S.cost.extras.find(x=>x.id===el.dataset.id);if(!x)return;x[k]=k==='amount'?(el.value===''?'':+el.value):el.value;save();updateCostLive()}
 });
 document.addEventListener('submit',e=>{
