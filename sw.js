@@ -1,5 +1,5 @@
 // Offline support. Bump VERSION whenever you deploy changes so phones pick up the new version.
-const VERSION = 'mixmatch-v39';
+const VERSION = 'mixmatch-v40';
 const CORE = ['/', '/index.html', '/config.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/apple-touch-icon.png'];
 // Only these outside files are cached (fonts and libraries). Supabase data is never cached here.
 const CDN = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
@@ -24,6 +24,9 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
 
   // Our own files: network first so updates arrive, cached copy when offline.
+  // Vercel Web Analytics requests are never cached.
+  if (url.pathname.startsWith('/_vercel/')) return;
+
   if (url.origin === self.location.origin) {
     e.respondWith(
       fetch(req)
