@@ -1878,6 +1878,7 @@ function koRows(){
 const IMG_C={bg:'#164f37',bg2:'#1e6747',box:'rgba(0,0,0,.2)',boxLine:'rgba(255,255,255,.55)',line:'rgba(255,255,255,.72)',ink:'#f4fbf6',dim:'rgba(244,251,246,.62)',gold:'#efb04f',goldInk:'#2a1a03',
   gc:['#4fd18b','#ff6b6b','#ffb23f','#5b8cff','#b77cff','#d6e04a','#ff7ac1','#4fd1d9']};
 const IF_D='"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif',IF_B='"IBM Plex Sans Thai",system-ui,sans-serif',IF_N='"JetBrains Mono",ui-monospace,monospace';
+function cTxt(c,t,x,y){const a=c.textAlign;if(a==='center'||a==='right'||a==='end'){const w=c.measureText(t).width;c.textAlign='left';c.fillText(t,a==='center'?x-w/2:x-w,y);c.textAlign=a}else c.fillText(t,x,y)}
 function cRR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 function cFit(ctx,t,w){t=String(t);if(ctx.measureText(t).width<=w)return t;while(t.length>1&&ctx.measureText(t+'…').width>w)t=t.slice(0,-1);return t+'…'}
 function cShuttle(ctx,cx,cy,size,won){
@@ -1916,8 +1917,8 @@ async function bracketImage(){
   const ctx=cv.getContext('2d');ctx.scale(SC,SC);
   const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,IMG_C.bg2);bg.addColorStop(1,IMG_C.bg);ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
   ctx.textBaseline='middle';ctx.textAlign='center';
-  ctx.fillStyle=IMG_C.ink;ctx.font=`700 36px ${IF_D}`;ctx.fillText(cFit(ctx,trData(T.name),W-2*PAD),W/2,52);
-  ctx.fillStyle=IMG_C.dim;ctx.font=`500 15px ${IF_B}`;ctx.fillText(`${__t("สายการแข่งขัน ·")} ${T.teams.length} ${__t("ทีม ·")} ${fmtDate(Date.now())}`,W/2,86);
+  ctx.fillStyle=IMG_C.ink;ctx.font=`700 36px ${IF_D}`;cTxt(ctx,cFit(ctx,trData(T.name),W-2*PAD),W/2,52);
+  ctx.fillStyle=IMG_C.dim;ctx.font=`500 15px ${IF_B}`;cTxt(ctx,`${__t("สายการแข่งขัน ·")} ${T.teams.length} ${__t("ทีม ·")} ${fmtDate(Date.now())}`,W/2,86);
   // vertical centres of every match
   const cy={};
   if(R>1){ko.rounds[0].forEach((m,i)=>{const k=i<n0?i:i-n0;cy['0-'+i]=top+(CH-bracketH)/2+k*(BH+GAP)+BH/2});
@@ -1937,13 +1938,13 @@ async function bracketImage(){
   const teamRow=(id,sc,win,x,y,w,h,r0)=>{
     if(win){ctx.fillStyle=IMG_C.gold;ctx.fillRect(x,y,w,h)}
     ctx.textAlign='left';ctx.fillStyle=win?IMG_C.goldInk:id?IMG_C.ink:IMG_C.dim;ctx.font=`${win?700:500} ${FS}px ${IF_B}`;
-    ctx.fillText(cFit(ctx,id?tName(id):r0?'BYE':__t("รอผล"),w-46),x+9,y+h/2+1);
-    if(sc!=null){ctx.textAlign='right';ctx.font=`700 ${FS}px ${IF_N}`;ctx.fillText(String(sc),x+w-9,y+h/2+1)}
+    cTxt(ctx,cFit(ctx,id?tName(id):r0?'BYE':__t("รอผล"),w-46),x+9,y+h/2+1);
+    if(sc!=null){ctx.textAlign='right';ctx.font=`700 ${FS}px ${IF_N}`;cTxt(ctx,String(sc),x+w-9,y+h/2+1)}
   };
   const box=(m,r,x,y,label)=>{
     const w0=r==='third'?(tkDone(m)?(m.sa>m.sb?m.a:m.b):null):tkWinner(m,r);
     ctx.save();cRR(ctx,x,y,BW,BH,7);ctx.fillStyle=IMG_C.box;ctx.fill();ctx.clip();
-    let yy=y;if(LH){ctx.fillStyle=IMG_C.dim;ctx.font=`500 10.5px ${IF_B}`;ctx.textAlign='left';ctx.fillText(label,x+9,y+LH/2+2);yy+=LH}
+    let yy=y;if(LH){ctx.fillStyle=IMG_C.dim;ctx.font=`500 10.5px ${IF_B}`;ctx.textAlign='left';cTxt(ctx,label,x+9,y+LH/2+2);yy+=LH}
     teamRow(m.a,m.sa,w0&&w0===m.a,x,yy,BW,RH,r===0);ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(x,yy+RH,BW,1);
     teamRow(m.b,m.sb,w0&&w0===m.b,x,yy+RH+1,BW,RH,r===0);ctx.restore();
     cRR(ctx,x,y,BW,BH,7);ctx.strokeStyle=IMG_C.boxLine;ctx.lineWidth=1;ctx.stroke();
@@ -1953,36 +1954,36 @@ async function bracketImage(){
   const groupCards=(arr,c)=>{if(!c)return;let y=top+(CH-sumG(arr))/2;arr.forEach(g=>{
     const st=tStand(g),h=gH(g),clr=IMG_C.gc[GL_ABC.indexOf(g)%8];
     cRR(ctx,c.x,y,GW,h,10);ctx.fillStyle='rgba(0,0,0,.22)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=clr;ctx.stroke();
-    ctx.textAlign='left';ctx.fillStyle=clr;ctx.font=`700 16px ${IF_D}`;ctx.fillText((__t("สาย")+' ')+g,c.x+13,y+18);
-    st.forEach((s,i)=>{ctx.globalAlpha=(!ko.k||i<ko.k)?1:.45;ctx.fillStyle=IMG_C.ink;ctx.font=`700 12.5px ${IF_N}`;ctx.fillText(String(i+1),c.x+13,y+40+i*GRH);
-      ctx.font=`500 13px ${IF_B}`;ctx.fillText(cFit(ctx,tName(s.id),GW-44),c.x+31,y+40+i*GRH);ctx.globalAlpha=1});
+    ctx.textAlign='left';ctx.fillStyle=clr;ctx.font=`700 16px ${IF_D}`;cTxt(ctx,(__t("สาย")+' ')+g,c.x+13,y+18);
+    st.forEach((s,i)=>{ctx.globalAlpha=(!ko.k||i<ko.k)?1:.45;ctx.fillStyle=IMG_C.ink;ctx.font=`700 12.5px ${IF_N}`;cTxt(ctx,String(i+1),c.x+13,y+40+i*GRH);
+      ctx.font=`500 13px ${IF_B}`;cTxt(ctx,cFit(ctx,tName(s.id),GW-44),c.x+31,y+40+i*GRH);ctx.globalAlpha=1});
     y+=h+16})};
   groupCards(LG,col('gL'));groupCards(RG,col('gR'));
   // final
   const fin=ko.rounds[R-1][0],fw=tkWinner(fin,R-1),cx=fx+FW/2;
-  ctx.textAlign='center';ctx.fillStyle=IMG_C.gold;ctx.font=`700 44px ${IF_D}`;ctx.fillText('FINAL',cx,fy-42);
-  ctx.fillStyle=IMG_C.dim;ctx.font=`500 12px ${IF_B}`;ctx.fillText(__t("ชิงชนะเลิศ"),cx,fy-14);
+  ctx.textAlign='center';ctx.fillStyle=IMG_C.gold;ctx.font=`700 44px ${IF_D}`;cTxt(ctx,'FINAL',cx,fy-42);
+  ctx.fillStyle=IMG_C.dim;ctx.font=`500 12px ${IF_B}`;cTxt(ctx,__t("ชิงชนะเลิศ"),cx,fy-14);
   ctx.save();ctx.shadowColor='rgba(239,176,79,.45)';ctx.shadowBlur=24;cRR(ctx,fx,fy,FW,FBH,13);
   const fg=ctx.createLinearGradient(0,fy,0,fy+FBH);fg.addColorStop(0,'rgba(239,176,79,.26)');fg.addColorStop(1,'rgba(0,0,0,.2)');ctx.fillStyle=fg;ctx.fill();ctx.restore();
   cRR(ctx,fx,fy,FW,FBH,13);ctx.lineWidth=2.5;ctx.strokeStyle=IMG_C.gold;ctx.stroke();
   const fRow=(id,sc,win,y)=>{cRR(ctx,fx+8,y,FW-16,FRH,8);ctx.fillStyle=win?IMG_C.gold:'rgba(255,255,255,.1)';ctx.fill();
-    ctx.textAlign='left';ctx.fillStyle=win?IMG_C.goldInk:id?IMG_C.ink:IMG_C.dim;ctx.font=`700 18px ${IF_D}`;ctx.fillText(cFit(ctx,id?tName(id):__t("รอผล"),FW-80),fx+20,y+FRH/2+1);
-    if(sc!=null){ctx.textAlign='right';ctx.font=`700 19px ${IF_N}`;ctx.fillText(String(sc),fx+FW-20,y+FRH/2+1)}};
+    ctx.textAlign='left';ctx.fillStyle=win?IMG_C.goldInk:id?IMG_C.ink:IMG_C.dim;ctx.font=`700 18px ${IF_D}`;cTxt(ctx,cFit(ctx,id?tName(id):__t("รอผล"),FW-80),fx+20,y+FRH/2+1);
+    if(sc!=null){ctx.textAlign='right';ctx.font=`700 19px ${IF_N}`;cTxt(ctx,String(sc),fx+FW-20,y+FRH/2+1)}};
   fRow(fin.a,fin.sa,fw&&fw===fin.a,fy+7);
-  ctx.textAlign='center';ctx.fillStyle=IMG_C.gold;ctx.font=`700 13px ${IF_N}`;ctx.fillText('V S',cx,fy+7+FRH+13);
+  ctx.textAlign='center';ctx.fillStyle=IMG_C.gold;ctx.font=`700 13px ${IF_N}`;cTxt(ctx,'V S',cx,fy+7+FRH+13);
   fRow(fin.b,fin.sb,fw&&fw===fin.b,fy+7+FRH+26);
   let yb=fy+FBH+24;
   cShuttle(ctx,cx,yb+36,76,!!fw);yb+=82;
   ctx.textAlign='center';ctx.font=`700 18px ${IF_D}`;const tn=cFit(ctx,trData(T.name),FW+40),tw=ctx.measureText(tn).width;
-  ctx.fillStyle=IMG_C.ink;ctx.fillText(tn,cx,yb+10);ctx.strokeStyle=IMG_C.line;ctx.lineWidth=1;ctx.beginPath();
+  ctx.fillStyle=IMG_C.ink;cTxt(ctx,tn,cx,yb+10);ctx.strokeStyle=IMG_C.line;ctx.lineWidth=1;ctx.beginPath();
   ctx.moveTo(cx-tw/2-34,yb+10);ctx.lineTo(cx-tw/2-10,yb+10);ctx.moveTo(cx+tw/2+10,yb+10);ctx.lineTo(cx+tw/2+34,yb+10);ctx.stroke();
   yb+=34;
   ctx.textAlign='center';
-  if(fw){ctx.fillStyle=IMG_C.dim;ctx.font=`500 12.5px ${IF_B}`;ctx.fillText(__t("แชมป์"),cx,yb);ctx.fillStyle=IMG_C.gold;ctx.font=`700 21px ${IF_D}`;ctx.fillText(cFit(ctx,tName(fw),FW+40),cx,yb+24)}
-  else{ctx.fillStyle=IMG_C.dim;ctx.font=`500 13px ${IF_B}`;ctx.fillText(__t("รอผลนัดชิง"),cx,yb+10)}
+  if(fw){ctx.fillStyle=IMG_C.dim;ctx.font=`500 12.5px ${IF_B}`;cTxt(ctx,__t("แชมป์"),cx,yb);ctx.fillStyle=IMG_C.gold;ctx.font=`700 21px ${IF_D}`;cTxt(ctx,cFit(ctx,tName(fw),FW+40),cx,yb+24)}
+  else{ctx.fillStyle=IMG_C.dim;ctx.font=`500 13px ${IF_B}`;cTxt(ctx,__t("รอผลนัดชิง"),cx,yb+10)}
   yb+=46;
-  if(ko.third){ctx.textAlign='center';ctx.fillStyle=IMG_C.ink;ctx.font=`700 14px ${IF_D}`;ctx.fillText(__t("ชิงที่ 3"),cx,yb+10);box(ko.third,'third',cx-BW/2,yb+26,__t("ชิงที่ 3"))}
-  ctx.textAlign='right';ctx.fillStyle=IMG_C.dim;ctx.font=`600 12px ${IF_D}`;ctx.fillText('BADMINTON MIX&MATCH',W-PAD,H-22);
+  if(ko.third){ctx.textAlign='center';ctx.fillStyle=IMG_C.ink;ctx.font=`700 14px ${IF_D}`;cTxt(ctx,__t("ชิงที่ 3"),cx,yb+10);box(ko.third,'third',cx-BW/2,yb+26,__t("ชิงที่ 3"))}
+  ctx.textAlign='right';ctx.fillStyle=IMG_C.dim;ctx.font=`600 12px ${IF_D}`;cTxt(ctx,'BADMINTON MIX&MATCH',W-PAD,H-22);
   return cv;
 }
 let bImgBlob=null,bImgUrl=null;
@@ -2333,11 +2334,11 @@ async function pcImage(){
   // header
   cShuttle(x,124,128,88,true);
   x.textAlign='left';x.textBaseline='alphabetic';
-  x.fillStyle=DIM;x.font=`600 28px ${IF_D}`;x.fillText('B A D M I N T O N',186,112);
-  x.fillStyle=CREAM;x.font=`700 54px ${IF_D}`;x.fillText('MIX&MATCH',184,166);
+  x.fillStyle=DIM;x.font=`600 28px ${IF_D}`;cTxt(x,'B A D M I N T O N',186,112);
+  x.fillStyle=CREAM;x.font=`700 54px ${IF_D}`;cTxt(x,'MIX&MATCH',184,166);
   const dt=new Date(S.sessionStart||Date.now()).toLocaleDateString(LOCALE(),{day:'numeric',month:'short',year:'numeric'});
   x.font=`600 30px ${IF_B}`;const dw=x.measureText(dt).width+56;
-  cRR(x,W-72-dw,96,dw,64,32);x.fillStyle='rgba(255,255,255,.12)';x.fill();x.fillStyle=CREAM;x.textAlign='center';x.fillText(dt,W-72-dw/2,139);x.textAlign='left';
+  cRR(x,W-72-dw,96,dw,64,32);x.fillStyle='rgba(255,255,255,.12)';x.fill();x.fillStyle=CREAM;x.textAlign='center';cTxt(x,dt,W-72-dw/2,139);x.textAlign='left';
   // photo window
   const PX=72,PY=220,PW=W-144,PHh=900;
   x.save();cRR(x,PX,PY,PW,PHh,48);x.clip();
@@ -2362,9 +2363,9 @@ async function pcImage(){
   const bx=212,by=PY+PHh,br=112,MC=[[C.gold,'#2a1a03'],['#c9d2da','#1f2a33'],['#d39462','#2a1405']][(s.badge.medal||9)-1]||[CREAM,'#164f37'];
   x.save();x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=30;x.shadowOffsetY=10;x.beginPath();x.arc(bx,by,br,0,Math.PI*2);x.fillStyle=MC[0];x.fill();x.restore();
   x.beginPath();x.arc(bx,by,br-14,0,Math.PI*2);x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=4;x.stroke();
-  x.fillStyle=MC[1];x.textAlign='center';x.font=`700 26px ${IF_D}`;x.fillText(cFit(x,s.badge.top,br*1.5),bx,by-46);
+  x.fillStyle=MC[1];x.textAlign='center';x.font=`700 26px ${IF_D}`;cTxt(x,cFit(x,s.badge.top,br*1.5),bx,by-46);
   let rf=104;x.font=`700 ${rf}px ${IF_D}`;while(rf>60&&x.measureText(s.badge.big).width>br*1.4){rf-=8;x.font=`700 ${rf}px ${IF_D}`}
-  x.fillText(s.badge.big,bx,by+44);x.textAlign='left';
+  cTxt(x,s.badge.big,bx,by+44);x.textAlign='left';
   // name + subline
   const NX=bx+br+40,NW=W-72-NX;
   x.fillStyle=CREAM;
@@ -2376,31 +2377,31 @@ async function pcImage(){
   let L=[s.lines.join(' / ')],F=fitLines(L,112);
   if(s.lines.length>1&&(F.fs<84||!F.ok)){const F2=fitLines(s.lines,96);if(F2.fs>F.fs||!F.ok){L=s.lines;F=F2}}
   x.font=`700 ${F.fs}px ${IF_D}`;const nmB=nTop+F.asc;
-  L.forEach((t,k)=>x.fillText(cFit(x,t,NW),NX,nmB+k*F.fs*1.08));
+  L.forEach((t,k)=>cTxt(x,cFit(x,t,NW),NX,nmB+k*F.fs*1.08));
   const nmEnd=nmB+(L.length-1)*F.fs*1.08+F.dsc;
   x.fillStyle=C.gold;x.font=`600 34px ${IF_B}`;
-  x.fillText(cFit(x,s.sub,NW),NX,nmEnd+58);
+  cTxt(x,cFit(x,s.sub,NW),NX,nmEnd+58);
   // stats: win-rate ring + list
   const d=s.pf-s.pa,pct=Math.round(s.w/s.g*100),rcx=246,rcy=1530,rr=150;
   x.lineCap='round';x.lineWidth=36;
   x.strokeStyle='rgba(255,255,255,.12)';x.beginPath();x.arc(rcx,rcy,rr,0,Math.PI*2);x.stroke();
   if(pct>0){x.strokeStyle=C.gold;x.beginPath();x.arc(rcx,rcy,rr,-Math.PI/2,-Math.PI/2+Math.PI*2*pct/100);x.stroke()}
-  x.lineCap='butt';x.textAlign='center';x.fillStyle=CREAM;let pf=92;x.font=`700 ${pf}px ${IF_D}`;while(pf>50&&x.measureText(pct+'%').width>rr*2-80){pf-=4;x.font=`700 ${pf}px ${IF_D}`}x.fillText(pct+'%',rcx,rcy+22);
-  x.fillStyle=DIM;x.font=`600 30px ${IF_B}`;x.fillText(__t("อัตราชนะ"),rcx,rcy+70);
+  x.lineCap='butt';x.textAlign='center';x.fillStyle=CREAM;let pf=92;x.font=`700 ${pf}px ${IF_D}`;while(pf>50&&x.measureText(pct+'%').width>rr*2-80){pf-=4;x.font=`700 ${pf}px ${IF_D}`}cTxt(x,pct+'%',rcx,rcy+22);
+  x.fillStyle=DIM;x.font=`600 30px ${IF_B}`;cTxt(x,__t("อัตราชนะ"),rcx,rcy+70);
   const LX=480,LR=W-80,rows=s.rows.map(([l,v,k])=>[l,v,k?C.gold:CREAM]);
   rows.forEach(([l,v,c],i)=>{const y=1400+i*130;
-    x.textAlign='left';x.fillStyle=DIM;x.font=`600 32px ${IF_B}`;x.fillText(cFit(x,l,LR-LX-200),LX,y+40);
-    x.textAlign='right';x.fillStyle=c;x.font=`700 76px ${IF_D}`;x.fillText(v,LR,y+50);
+    x.textAlign='left';x.fillStyle=DIM;x.font=`600 32px ${IF_B}`;cTxt(x,cFit(x,l,LR-LX-200),LX,y+40);
+    x.textAlign='right';x.fillStyle=c;x.font=`700 76px ${IF_D}`;cTxt(x,v,LR,y+50);
     if(i<2){x.save();x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=2;x.setLineDash([10,10]);x.beginPath();x.moveTo(LX,y+92);x.lineTo(LR,y+92);x.stroke();x.restore()}});
   // footer
   net(1780);
   x.textAlign='center';x.fillStyle=CREAM;{const qt='“'+pcQuote(s)+'”',MW=W-160;let qf=38;x.font=`600 ${qf}px ${IF_B}`;
-    if(x.measureText(qt).width<=MW){x.fillText(qt,W/2,1856)}
+    if(x.measureText(qt).width<=MW){cTxt(x,qt,W/2,1856)}
     else{qf=34;x.font=`600 ${qf}px ${IF_B}`;const ws=qt.split(' ');let best=null;
       for(let i=1;i<ws.length;i++){const a=ws.slice(0,i).join(' '),b=ws.slice(i).join(' '),m=Math.max(x.measureText(a).width,x.measureText(b).width);if(!best||m<best[2])best=[a,b,m]}
-      if(!best){while(qf>22&&x.measureText(qt).width>MW){qf-=2;x.font=`600 ${qf}px ${IF_B}`}x.fillText(cFit(x,qt,MW),W/2,1856)}
+      if(!best){while(qf>22&&x.measureText(qt).width>MW){qf-=2;x.font=`600 ${qf}px ${IF_B}`}cTxt(x,cFit(x,qt,MW),W/2,1856)}
       else{while(qf>22&&best[2]>MW){qf-=2;x.font=`600 ${qf}px ${IF_B}`;best[2]=Math.max(x.measureText(best[0]).width,x.measureText(best[1]).width)}
-        x.fillText(cFit(x,best[0],MW),W/2,1832);x.fillText(cFit(x,best[1],MW),W/2,1832+qf+10)}}}
+        cTxt(x,cFit(x,best[0],MW),W/2,1832);cTxt(x,cFit(x,best[1],MW),W/2,1832+qf+10)}}}
   if(s.gold){x.save();x.shadowColor='rgba(239,176,79,.6)';x.shadowBlur=30;x.strokeStyle=C.gold;x.lineWidth=12;cRR(x,22,22,W-44,H-44,40);x.stroke();x.restore()}
   x.textAlign='left';
   return cv;
